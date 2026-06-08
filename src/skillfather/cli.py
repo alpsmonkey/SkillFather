@@ -34,8 +34,8 @@ def _print_banner(platform: str = None):
     print()
 
 
-def _parse_score_input(text: str) -> float:
-    """Parse user score input into 0.0-1.0 range."""
+def _parse_score_input(text: str) -> float | None:
+    """Parse user score input into 0.0-1.0 range. Returns None on invalid input."""
     text = text.strip().lower()
     if text in ("y", "yes", "是", "1"):
         return 1.0
@@ -45,9 +45,11 @@ def _parse_score_input(text: str) -> float:
         return 0.5
     try:
         val = float(text)
-        return max(0.0, min(1.0, val / 10.0))
+        if 0 <= val <= 10:
+            return val / 10.0
+        return None  # Out of range
     except ValueError:
-        return 0.5  # Default
+        return None
 
 
 def cmd_analyze(args):
@@ -148,8 +150,13 @@ def _run_interactive(profile, use_llm, llm_config, num_q, args):
         print(f"  -> {q.explanation}")
         print()
         answer = input("  你的回答 [y/p/n/0-10]: ").strip()
+        score = _parse_score_input(answer)
+        while score is None:
+            print("  ⚠ 无效输入，请输入 y/p/n 或 0-10 的数字")
+            answer = input("  你的回答 [y/p/n/0-10]: ").strip()
+            score = _parse_score_input(answer)
         q.answer = answer
-        q.score = _parse_score_input(answer)
+        q.score = score
         print(f"  评分: {q.score * 10:.1f}/10")
         print()
 
@@ -282,7 +289,7 @@ def main(argv=None):
     subparsers.add_parser("platforms", help="列出所有支持的平台")
 
     # version
-    parser.add_argument("-v", "--version", action="version", version="skillfather 0.2.0")
+    parser.add_argument("-v", "--version", action="version", version="skillfather 0.2.1")
 
     args = parser.parse_args(argv)
 
