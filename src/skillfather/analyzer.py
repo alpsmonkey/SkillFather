@@ -418,6 +418,90 @@ def get_recommendation(score: float) -> str:
         return "强烈不建议安装。该 Skill 与你的工作场景基本不匹配，安装价值极低。"
 
 
+def _estimate_dimension_scores(profile: SkillProfile) -> dict[str, float]:
+    """Estimate dimension scores (0.0-1.0) from parsed skill content.
+
+    Uses heuristics based on what the parser extracted to give meaningful
+    non-interactive scores instead of a flat 0.5.
+    """
+    scores: dict[str, float] = {}
+
+    # ── use_case (25%) ──
+    checks = _check_use_case(profile)
+    score = 0.4  # base: neutral-low (we can't know the user's actual needs)
+    if checks["has_triggers"]:
+        score += 0.25  # skill clearly defines its scope
+    if checks["has_summary"]:
+        score += 0.15
+    if len(profile.triggers) >= 5:
+        score += 0.1  # rich trigger vocabulary = broader applicability
+    if len(profile.capabilities) >= 3:
+        score += 0.1  # multiple capabilities
+    scores["use_case"] = min(score, 1.0)
+
+    # ── environment (20%) ──
+    checks = _check_environment(profile)
+    score = 0.6  # base: assume most environments are capable
+    if checks["has_tools"]:
+        score -= 0.1  # external tools = potential setup friction
+        if len(profile.tools_required) >= 4:
+            score -= 0.1  # many tools = higher barrier
+    if checks["has_dependencies"]:
+        score -= 0.05  # pip dependencies = minor friction
+    if not checks["has_tools"] and not checks["has_dependencies"]:
+        score += 0.15  # zero external deps = easy to run
+    scores["environment"] = max(0.1, min(score, 1.0))
+
+    # ── prerequisites (20%) ──
+    checks = _check_prerequisites(profile)
+    score = 0.7  # base: most skills are designed to be usable
+    if checks["has_requirements"]:
+        score -= 0.15  # explicit requirements = potential friction
+        if len(profile.requirements) >= 4:
+            score -= 0.1  # many requirements
+    if checks["has_read_when"]:
+        score += 0.1  # well-defined trigger scenarios
+    if not checks["has_requirements"]:
+        score += 0.1  # no explicit barriers
+    scores["prerequisites"] = max(0.1, min(score, 1.0))
+
+    # ── workflow (20%) ──
+    checks = _check_workflow(profile)
+    score = 0.5  # base: unknown fit
+    line_count = len(profile.instructions.split("\n"))
+    if checks["has_instructions"]:
+        score += 0.15  # substantial instructions = well thought out
+    if checks["has_capabilities"]:
+        score += 0.15
+        if len(profile.capabilities) >= 5:
+            score += 0.1  # comprehensive capabilities
+    if line_count >= 50:
+        score += 0.1  # detailed workflow
+    if line_count >= 150:
+        score -= 0.05  # overly complex = harder to adopt
+    scores["workflow"] = max(0.1, min(score, 1.0))
+
+    # ── documentation (15%) ──
+    checks = _check_documentation(profile)
+    score = 0.3  # base: assume moderate docs
+    section_count = len(profile.all_sections)
+    if checks["has_sections"]:
+        score += 0.2
+    if section_count >= 4:
+        score += 0.15  # well-structured
+    if section_count >= 7:
+        score += 0.1  # very thorough
+    if profile.summary and len(profile.summary) >= 50:
+        score += 0.1  # good summary
+    if profile.description and len(profile.description) >= 100:
+        score += 0.1  # good description
+    if section_count >= 2 and len(profile.instructions) >= 200:
+        score += 0.05  # substantial body
+    scores["documentation"] = max(0.1, min(score, 1.0))
+
+    return scores
+
+
 def analyze(
     skill_path: str,
     use_llm: bool = False,
@@ -442,9 +526,16 @@ def analyze(
     else:
         questions = generate_questions_rule_based(profile, num_questions)
 
-    # Default: assume moderate scores for non-interactive mode
+    # Estimate scores from content analysis (non-interactive mode)
+    dim_estimates = _estimate_dimension_scores(profile)
+
+    # Map question scores from dimension estimates
     for q in questions:
-        q.score = 0.5  # Default neutral score
+        base_dim_score = dim_estimates.get(q.dimension, 0.5)
+        # Add small per-question variance (±0.08) to avoid identical scores
+        import random
+        variance = (q.id * 7 % 17 - 8) / 100.0  # deterministic: ±0.08
+        q.score = max(0.05, min(0.95, base_dim_score + variance))
 
     overall = calculate_score(questions)
     dim_scores = calculate_dimension_scores(questions)
@@ -455,5 +546,5 @@ def analyze(
         dimension_scores=dim_scores,
         overall_score=overall,
         recommendation=get_recommendation(overall),
-        details="非交互模式：所有问题默认为中性评分（5/10）。使用 --interactive 模式获取更精确的评分。",
+        details="自动评分模式：基于 Skill 内容特征（触发词、工具依赖、文档结构等）估算适配度。使用 --interactive 模式获取个性化精确评分。",
     )
