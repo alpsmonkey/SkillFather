@@ -1,155 +1,182 @@
-# SkillFit
+<p align="center">
+  <img src="docs/logo.svg" alt="SkillFather" width="360" />
+</p>
 
-**Multi-Platform Agent Skill 适配度分析工具**
+<h2 align="center">SkillFather</h2>
 
-在安装或使用一个 Agent Skill 之前，从使用角度分析它是否真的适合你——基于 5 个维度、6-10 个诊断问题，输出满分 10 分的适配度评分。
+<p align="center">
+  <b>Multi-Platform Agent Skill Fitness Analyzer</b>
+</p>
 
-> **定位声明**：SkillFit 只做**适用性评审**（fitness/suitability assessment），从用户实际使用场景出发评估一个 Skill 是否适合安装和使用。**不涉及安全性审计、合规检查或代码漏洞分析。**
+<p align="center">
+  <a href="README.md">English</a> · <a href="docs/README_CN.md">简体中文</a>
+</p>
 
-## 支持平台
+<p align="center">
+  <img src="https://img.shields.io/badge/version-v0.2.0-orange" alt="Version" />
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="License" />
+  <img src="https://img.shields.io/badge/platforms-6-green" alt="Platforms" />
+</p>
 
-| 平台 | Skill 格式 | 存储路径 |
-|------|-----------|---------|
+<p align="center">
+  <b>Don't install a skill just because it looks cool — find out if it's actually built for <i>you</i>.</b>
+</p>
+
+---
+
+> **Scope Statement**: SkillFather focuses exclusively on **fitness/suitability assessment** — evaluating whether a Skill matches your actual use cases. It does **not** perform security audits, compliance checks, or vulnerability analysis.
+
+## What it does
+
+Every Agent platform has a marketplace full of Skills. Some are brilliant — for someone else. SkillFather reads a Skill definition, asks you the right questions, and scores it across 5 dimensions so you know **before installing** whether it's worth your time.
+
+```
+SKILL.md → Parse → Generate 6-10 Diagnostic Questions → 5-Dimension Score → Fit Rating /10
+```
+
+### The 5 Dimensions
+
+| Dimension | Weight | What it measures |
+|-----------|--------|------------------|
+| Use-Case Fit | 25% | Does the Skill's trigger scope cover your actual needs? |
+| Environment Readiness | 20% | Do you have the required tools, connectors, and dependencies? |
+| Prerequisites | 20% | Do you meet the Skill's preconditions and access requirements? |
+| Workflow Match | 20% | Does the Skill's execution flow match how you actually work? |
+| Documentation Quality | 15% | Is the Skill's documentation clear, complete, and actionable? |
+
+### Supported Platforms
+
+| Platform | Skill Format | Storage Path |
+|----------|-------------|--------------|
 | **WorkBuddy** | SKILL.md (YAML + Markdown) | `~/.workbuddy/skills/` |
 | **CodeBuddy** | SKILL.md (YAML + Markdown) | `~/.codebuddy/skills/` |
 | **OpenAI Codex Agent** | SKILL.md + agents/openai.yaml | `.agents/skills/` |
 | **Claude Code** | .claude/commands/*.md | `.claude/commands/` |
-| **Coze / 扣子** | .skill / .zip / JSON | Web UI + 导出文件 |
+| **Coze** | .skill / .zip / JSON | Web UI + exported files |
 | **Hermes Agent** | SKILL.md (Hermes metadata) | `~/.hermes/skills/` |
 
-## 安装
+## Quick Start
 
 ```bash
-# 克隆项目
-git clone https://github.com/your-username/skillfit.git
-cd skillfit
-
-# 安装（零外部依赖）
+# Clone and install (zero external dependencies)
+git clone https://github.com/alpsmonkey/SkillFather.git
+cd SkillFather
 pip install -e .
 ```
 
-## 快速开始
+### Basic Usage
 
 ```bash
-# 列出所有支持的平台
+# List all supported platforms
 skillfit platforms
 
-# 自动检测平台并分析
+# Auto-detect platform and analyze
 skillfit analyze path/to/SKILL.md
 
-# 指定平台
+# Specify a platform explicitly
 skillfit analyze path/to/command.md --platform claude-code
 
-# 交互式问答（精确评分）
+# Interactive Q&A mode (get a personalized score)
 skillfit analyze path/to/SKILL.md --interactive
 
-# 输出 HTML 报告
+# Output HTML report
 skillfit analyze path/to/SKILL.md --format html -o report.html
 
-# LLM 增强模式
-SKILLFIT_API_KEY=xxx skillfit analyze SKILL.md --llm --interactive
+# Output Markdown report
+skillfit analyze path/to/SKILL.md --format markdown -o report.md
 ```
 
-## 使用示例
-
-### WorkBuddy / CodeBuddy Skill
+### Platform-Specific Examples
 
 ```bash
+# WorkBuddy / CodeBuddy
 skillfit analyze ~/.workbuddy/skills/my-skill/SKILL.md
 skillfit analyze ~/.codebuddy/skills/pdf-editor/SKILL.md --platform codebuddy
-```
 
-### OpenAI Codex Skill
+# OpenAI Codex Agent
+skillfit analyze .agents/skills/deploy/SKILL.md --platform codex
 
-```bash
-skillfit analyze ~/.agents/skills/deploy/SKILL.md --platform codex
-```
-
-### Claude Code 命令
-
-```bash
+# Claude Code
 skillfit analyze .claude/commands/review.md --platform claude-code
+
+# Coze / 扣子
+skillfit analyze exported_skill.json --platform coze
+
+# Hermes Agent
+skillfit analyze ~/.hermes/skills/research/SKILL.md --platform hermes
 ```
 
-### Coze / 扣子 技能
+## Dual-Engine Architecture
+
+| Mode | Description | Dependencies |
+|------|-------------|---------------|
+| **Rule Engine** | Template-based offline analysis, zero config | None (pure stdlib) |
+| **LLM Enhanced** | Uses an LLM to generate personalized questions and scoring | Any OpenAI-compatible API |
+
+### LLM Mode (Optional)
 
 ```bash
-skillfit analyze exported_skill.skill --platform coze
-skillfit analyze bot_config.json --platform coze
+# Set API key via environment variable
+export SKILLFIT_API_KEY=sk-xxx
+skillfit analyze SKILL.md --llm --interactive
+
+# Or use a custom API endpoint
+export SKILLFIT_API_BASE=https://api.deepseek.com/v1
+export SKILLFIT_MODEL=deepseek-chat
+skillfit analyze SKILL.md --llm --interactive
 ```
 
-### Hermes Agent 技能
+## Output Formats
+
+### Terminal
+
+```
+╔══════════════════════════════════════════════════╗
+║  SkillFather — Fitness Analysis Report          ║
+╠══════════════════════════════════════════════════╣
+║  Skill:   SAP Cost Analysis                      ║
+║  Platform: workbuddy                             ║
+║  Score:   7.2 / 10                              ║
+║  Verdict: RECOMMENDED                            ║
+╠══════════════════════════════════════════════════╣
+║  Use-Case Fit       ████████░░  8.0/10          ║
+║  Environment        ██████░░░░  6.0/10          ║
+║  Prerequisites      ███████░░░  7.0/10          ║
+║  Workflow Match     ████████░░  7.5/10          ║
+║  Documentation      ███████░░░  7.0/10          ║
+╚══════════════════════════════════════════════════╝
+```
+
+### HTML Report
+
+Generate a styled, responsive HTML report with visual score breakdowns:
 
 ```bash
-skillfit analyze ~/.hermes/skills/research/arxiv/SKILL.md --platform hermes
+skillfit analyze SKILL.md --format html -o report.html
 ```
 
-## 评分维度
+### Markdown Report
 
-| 维度 | 权重 | 说明 |
-|------|------|------|
-| 用例契合度 | 25% | Skill 的触发场景是否覆盖你的实际需求 |
-| 环境就绪度 | 20% | 你的 Agent 环境是否具备所需工具和依赖 |
-| 前置条件 | 20% | 你是否满足 Skill 运行所需的先决条件 |
-| 工作流匹配 | 20% | Skill 的工作流程是否符合你的操作习惯 |
-| 文档质量 | 15% | Skill 的文档是否清晰、完整、易于理解 |
+For note-taking or sharing:
 
-## 双模式引擎
-
-| 模式 | 说明 | 依赖 |
-|------|------|------|
-| 规则引擎 | 基于模板的离线分析，零配置 | 无（纯 stdlib） |
-| LLM 增强 | 使用大模型生成个性化问题和评分 | OpenAI 兼容 API |
-
-## 项目结构
-
-```
-skillfit/
-├── src/skillfit/
-│   ├── __init__.py
-│   ├── __main__.py
-│   ├── cli.py              # CLI 入口（多平台支持）
-│   ├── parser.py           # 通用 SKILL.md 解析器
-│   ├── analyzer.py         # 分析引擎（规则 + LLM）
-│   ├── reporter.py         # HTML / Markdown 报告
-│   ├── config.py           # 配置管理
-│   └── platforms/          # 多平台适配器
-│       ├── __init__.py     # 平台注册与自动检测
-│       ├── base.py         # 适配器基类
-│       ├── workbuddy.py    # WorkBuddy
-│       ├── codebuddy.py    # CodeBuddy
-│       ├── codex.py        # OpenAI Codex Agent
-│       ├── claude_code.py  # Claude Code
-│       ├── coze.py         # Coze / 扣子
-│       └── hermes.py       # Hermes Agent
-├── templates/
-│   └── report.html         # HTML 报告模板
-├── examples/              # 各平台示例文件
-│   ├── sample_skill.md         # WorkBuddy 示例
-│   ├── sample_codex_skill.md   # Codex 示例
-│   ├── sample_claude_command.md # Claude Code 示例
-│   ├── sample_coze_skill.json  # Coze 示例
-│   └── sample_hermes_skill.md  # Hermes 示例
-├── tests/
-│   └── test_parser.py
-├── README.md
-├── LICENSE
-├── pyproject.toml
-└── requirements.txt
+```bash
+skillfit analyze SKILL.md --format markdown -o report.md
 ```
 
-## 配置
+## Configuration
 
-环境变量：
+### Environment Variables
 
-| 变量 | 说明 | 默认值 |
-|------|------|--------|
-| `SKILLFIT_API_KEY` | LLM API Key | 无（仅规则模式） |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SKILLFIT_API_KEY` | LLM API Key | None (rule mode only) |
 | `SKILLFIT_API_BASE` | API Base URL | `https://api.openai.com/v1` |
-| `SKILLFIT_MODEL` | LLM 模型名 | `gpt-4o-mini` |
-| `SKILLFIT_CONFIG` | 配置文件路径 | 无 |
+| `SKILLFIT_MODEL` | LLM model name | `gpt-4o-mini` |
+| `SKILLFIT_CONFIG` | Config file path | None |
 
-JSON 配置文件（可选）：
+### JSON Config (Optional)
+
+Create `skillfit.json` in your project root or specify via `SKILLFIT_CONFIG`:
 
 ```json
 {
@@ -172,6 +199,51 @@ JSON 配置文件（可选）：
 }
 ```
 
+## Project Structure
+
+```
+SkillFather/
+├── src/skillfit/
+│   ├── __init__.py
+│   ├── __main__.py
+│   ├── cli.py              # CLI entry point (multi-platform)
+│   ├── parser.py           # Universal Skill parser
+│   ├── analyzer.py         # Analysis engine (rule + LLM)
+│   ├── reporter.py         # HTML / Markdown reports
+│   ├── config.py           # Configuration management
+│   └── platforms/          # Platform adapters
+│       ├── __init__.py     # Platform registry & auto-detection
+│       ├── base.py         # Adapter base class
+│       ├── workbuddy.py    # WorkBuddy
+│       ├── codebuddy.py    # CodeBuddy
+│       ├── codex.py        # OpenAI Codex Agent
+│       ├── claude_code.py  # Claude Code
+│       ├── coze.py         # Coze
+│       └── hermes.py       # Hermes Agent
+├── templates/
+│   └── report.html         # HTML report template
+├── examples/              # Sample files per platform
+│   ├── sample_skill.md
+│   ├── sample_codex_skill.md
+│   ├── sample_claude_command.md
+│   ├── sample_coze_skill.json
+│   └── sample_hermes_skill.md
+├── tests/
+│   └── test_parser.py
+├── docs/
+│   └── README_CN.md        # Chinese README
+├── README.md
+├── LICENSE
+├── pyproject.toml
+└── requirements.txt
+```
+
+## Why "Father"?
+
+Every Skill has a creator, but nobody tells you whether that Skill was built for **you**. SkillFather is the judge — it reads the fine print, asks the hard questions, and gives you a number you can trust.
+
+> Install smarter. Not more.
+
 ## License
 
-MIT License
+[MIT](LICENSE) — use it, modify it, ship it.
