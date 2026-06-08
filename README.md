@@ -230,6 +230,19 @@ SkillFather/
 │   └── sample_hermes_skill.md
 ├── tests/
 │   └── test_parser.py
+├── dist/                    # Platform-specific SkillFather skill files
+│   ├── claude-code/
+│   │   └── skillfather.md   # ~/.claude/commands/skillfather.md
+│   ├── codebuddy/
+│   │   └── SKILL.md         # ~/.codebuddy/skills/skillfather/
+│   ├── codex/
+│   │   ├── SKILL.md         # ~/.agents/skills/skillfather/
+│   │   └── agents/
+│   │       └── openai.yaml
+│   └── hermes/
+│       └── productivity/
+│           └── SKILL.md     # ~/.hermes/skills/productivity/skillfather/
+├── SKILL.md                 # WorkBuddy skill definition (also used as root)
 ├── docs/
 │   └── README_CN.md        # Chinese README
 ├── README.md
@@ -237,6 +250,29 @@ SkillFather/
 ├── pyproject.toml
 └── requirements.txt
 ```
+
+## Use as a Skill on Your Platform
+
+SkillFather can be installed as a native skill on most major Agent platforms:
+
+```bash
+# Claude Code - slash command
+cp dist/claude-code/skillfather.md ~/.claude/commands/skillfather.md
+
+# CodeBuddy
+cp dist/codebuddy/SKILL.md ~/.codebuddy/skills/skillfather/SKILL.md
+
+# Codex (OpenAI Agent)
+cp -r dist/codex ~/.agents/skills/skillfather
+
+# Hermes Agent
+cp -r dist/hermes/productivity/skillfather ~/.hermes/skills/productivity/skillfather
+
+# WorkBuddy
+cp SKILL.md ~/.workbuddy/skills/skillfather/SKILL.md
+```
+
+> **Note:** Coze is a web-based platform — create a Bot manually via the Coze UI.
 
 ## Why "Father"?
 

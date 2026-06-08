@@ -230,6 +230,19 @@ SkillFather/
 │   └── sample_hermes_skill.md
 ├── tests/
 │   └── test_parser.py
+├── dist/                    # 各平台格式的 SkillFather 技能文件
+│   ├── claude-code/
+│   │   └── skillfather.md   # ~/.claude/commands/skillfather.md
+│   ├── codebuddy/
+│   │   └── SKILL.md         # ~/.codebuddy/skills/skillfather/
+│   ├── codex/
+│   │   ├── SKILL.md         # ~/.agents/skills/skillfather/
+│   │   └── agents/
+│   │       └── openai.yaml
+│   └── hermes/
+│       └── productivity/
+│           └── SKILL.md     # ~/.hermes/skills/productivity/skillfather/
+├── SKILL.md                 # WorkBuddy 技能定义（根目录）
 ├── docs/
 │   └── README_CN.md        # 中文 README（本文件）
 ├── README.md               # English README
@@ -237,6 +250,29 @@ SkillFather/
 ├── pyproject.toml
 └── requirements.txt
 ```
+
+## 在你的平台上安装为技能
+
+SkillFather 可以作为原生技能安装到主流 Agent 平台：
+
+```bash
+# Claude Code — 斜杠命令
+cp dist/claude-code/skillfather.md ~/.claude/commands/skillfather.md
+
+# CodeBuddy
+cp dist/codebuddy/SKILL.md ~/.codebuddy/skills/skillfather/SKILL.md
+
+# Codex (OpenAI Agent)
+cp -r dist/codex ~/.agents/skills/skillfather
+
+# Hermes Agent
+cp -r dist/hermes/productivity/skillfather ~/.hermes/skills/productivity/skillfather
+
+# WorkBuddy
+cp SKILL.md ~/.workbuddy/skills/skillfather/SKILL.md
+```
+
+> **注意**：Coze 为 Web 平台，需通过 Coze 网页端手动创建 Bot。
 
 ## 为什么叫 "Father"？
 

@@ -1,14 +1,18 @@
-# SkillFit
+# Python build artifacts
 __pycache__/
 *.py[cod]
 *.egg-info/
-dist/
 build/
 .venv/
+
+# Reports (generated)
 *.html
+!templates/report.html
+
+# Markdown (keep only tracked files)
 *.md
 !README.md
 !docs/README_CN.md
 !SKILL.md
+!dist/**/*.md
 !LICENSE
-!templates/report.html

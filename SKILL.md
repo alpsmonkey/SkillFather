@@ -166,3 +166,32 @@ python -m skillfather analyze <skill_path> --llm
 - 本工具仅评估**适用性**（是否适合你的使用场景），不涉及安全性审计
 - 规则引擎模式为离线零依赖分析，LLM 模式需要配置 API Key
 - 自动检测平台可能不准确，如有疑问请手动指定 `--platform`
+
+## 跨平台安装
+
+仓库 `dist/` 目录包含各平台格式的 SkillFather 适配文件，可直接复制到对应平台使用：
+
+| 平台 | 安装路径 | 文件 |
+|------|---------|------|
+| **WorkBuddy** | `~/.workbuddy/skills/skillfather/` | `SKILL.md`（项目根目录） |
+| **CodeBuddy** | `~/.codebuddy/skills/skillfather/` | `dist/codebuddy/SKILL.md` |
+| **Claude Code** | `~/.claude/commands/` | `dist/claude-code/skillfather.md` |
+| **Codex** | `~/.agents/skills/skillfather/` | `dist/codex/SKILL.md` + `dist/codex/agents/openai.yaml` |
+| **Hermes** | `~/.hermes/skills/productivity/skillfather/` | `dist/hermes/productivity/SKILL.md` |
+| **Coze** | 不适用 | Coze 为 Web UI 平台，需手动在 Web 端创建 Bot |
+
+### 安装示例
+
+```bash
+# Claude Code
+cp dist/claude-code/skillfather.md ~/.claude/commands/skillfather.md
+
+# Codex
+cp -r dist/codex ~/.agents/skills/skillfather
+
+# Hermes
+cp -r dist/hermes/productivity/skillfather ~/.hermes/skills/productivity/skillfather
+
+# CodeBuddy
+cp dist/codebuddy/SKILL.md ~/.codebuddy/skills/skillfather/SKILL.md
+```

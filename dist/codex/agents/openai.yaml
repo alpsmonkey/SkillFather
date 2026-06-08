@@ -1,0 +1,11 @@
+description:
+  display_name: skillfather
+  allow_implicit_invocation: false
+  dependencies:
+    - type: tool
+      value: Bash(python*)
+    - type: tool
+      value: Bash(pip*)
+    - type: tool
+      value: Read
+  default_prompt: "Analyze the following skill file for fitness: $ARGUMENTS"
