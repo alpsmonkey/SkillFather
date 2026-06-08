@@ -29,7 +29,7 @@ def _print_banner(platform: str = None):
     print()
     print("  ╔════════════════════════════════════════════════╗")
     print(f"  ║  SkillFather{platform_tag:<32s}  ║")
-    print("  ║  Agent Skill 适配度分析工具 (v0.2.0)         ║")
+    print("  ║  Agent Skill 适配度分析工具 (v0.2.1)         ║")
     print("  ╚════════════════════════════════════════════════╝")
     print()
 

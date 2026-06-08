@@ -178,46 +178,34 @@ def generate_questions_rule_based(profile: SkillProfile, num_questions: int = 8)
     This mode works offline without an LLM API key.
     Each dimension contributes 1-2 questions. Primary template is used if the
     condition matches; otherwise the fallback template is used.
+
+    The num_questions parameter controls the total output count:
+    - <=5: one question per dimension (highest-priority dimension first)
+    - 6-9: priority dimensions get 2 questions, rest get 1
+    - >=10: all dimensions get 2 questions (full set)
     """
     questions: list[Question] = []
     qid = 0
     weights = AnalysisConfig().score_weights
 
-    for tmpl_group in _TEMPLATES:
+    # Dimension priority: high-weight dimensions get extra questions first
+    dim_priority = sorted(_TEMPLATES, key=lambda t: weights.get(t["dimension"], 0.2), reverse=True)
+
+    for tmpl_group in dim_priority:
+        if qid >= num_questions:
+            break
+
         dim = tmpl_group["dimension"]
         label = tmpl_group["label"]
         check_fn = _CHECK_FNS.get(tmpl_group["check_fn"], lambda p: {})
         checks = check_fn(profile)
 
-        # Pick primary if condition matches, otherwise fallback
         primary = tmpl_group["primary"]
         fallback = tmpl_group["fallback"]
 
-        # Generate primary question
-        if checks.get(primary["condition"], primary["condition"] == "always"):
-            qid += 1
-            text = primary["text"].format(
-                triggers=profile.trigger_text[:60],
-                summary=(profile.summary or profile.description)[:80],
-                tools=profile.tool_text[:60],
-                requirements=profile.requirement_text[:60],
-                read_when="；".join(profile.read_when[:5]) if profile.read_when else "未指定",
-                line_count=len(profile.instructions.split("\n")),
-                capabilities=profile.capability_text[:60],
-                section_count=len(profile.all_sections),
-            )
-            questions.append(Question(
-                id=qid,
-                text=text,
-                dimension=dim,
-                dimension_label=label,
-                explanation=primary["explanation"],
-                weight=weights.get(dim, 0.2),
-            ))
-
-        # Generate fallback question (second question per dimension)
+        # Always generate primary question for each dimension
         qid += 1
-        text = fallback["text"].format(
+        text = primary["text"].format(
             triggers=profile.trigger_text[:60],
             summary=(profile.summary or profile.description)[:80],
             tools=profile.tool_text[:60],
@@ -232,12 +220,33 @@ def generate_questions_rule_based(profile: SkillProfile, num_questions: int = 8)
             text=text,
             dimension=dim,
             dimension_label=label,
-            explanation=fallback["explanation"],
+            explanation=primary["explanation"],
             weight=weights.get(dim, 0.2),
         ))
 
-        if qid >= num_questions:
-            return questions[:num_questions]
+        # Generate fallback question only if we have room
+        remaining = num_questions - qid
+        unfilled_dims = len(dim_priority) - (qid // 2) - 1
+        if remaining > unfilled_dims:
+            qid += 1
+            text = fallback["text"].format(
+                triggers=profile.trigger_text[:60],
+                summary=(profile.summary or profile.description)[:80],
+                tools=profile.tool_text[:60],
+                requirements=profile.requirement_text[:60],
+                read_when="；".join(profile.read_when[:5]) if profile.read_when else "未指定",
+                line_count=len(profile.instructions.split("\n")),
+                capabilities=profile.capability_text[:60],
+                section_count=len(profile.all_sections),
+            )
+            questions.append(Question(
+                id=qid,
+                text=text,
+                dimension=dim,
+                dimension_label=label,
+                explanation=fallback["explanation"],
+                weight=weights.get(dim, 0.2),
+            ))
 
     return questions[:num_questions]
 
@@ -532,9 +541,8 @@ def analyze(
     # Map question scores from dimension estimates
     for q in questions:
         base_dim_score = dim_estimates.get(q.dimension, 0.5)
-        # Add small per-question variance (±0.08) to avoid identical scores
-        import random
-        variance = (q.id * 7 % 17 - 8) / 100.0  # deterministic: ±0.08
+        # Deterministic per-question variance (±0.08) to avoid identical scores
+        variance = (q.id * 7 % 17 - 8) / 100.0
         q.score = max(0.05, min(0.95, base_dim_score + variance))
 
     overall = calculate_score(questions)
