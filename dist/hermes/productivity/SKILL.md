@@ -29,6 +29,7 @@ Use this skill when the user asks to analyze, evaluate, or review an Agent Skill
 
 - 分析技能 / 评审技能 / 评估技能适用性
 - skill fitness / skill analysis / 适配度分析
+- 帮我分析一下这个技能 / 帮我分析一下这个skill / 分析这个技能 / 分析这个skill
 - "should I install this skill?"
 - Compare fitness of multiple skills
 

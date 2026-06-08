@@ -20,6 +20,10 @@ triggers:
   - skill analysis
   - 适配度分析
   - 分析skill
+  - 帮我分析一下这个技能
+  - 帮我分析一下这个skill
+  - 分析这个skill
+  - 分析这个技能
   - skillfather
 ---
 
