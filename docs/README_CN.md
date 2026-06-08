@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/logo.svg" alt="SkillFather" width="360" />
+  <img src="logo.svg" alt="SkillFather" width="360" />
 </p>
 
 <h2 align="center">SkillFather</h2>
