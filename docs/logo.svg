@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360" width="360" height="360">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="eye" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#dc2626"/>
+      <stop offset="100%" style="stop-color:#991b1b"/>
+    </linearGradient>
+    <linearGradient id="ray" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ef4444;stop-opacity:0.7"/>
+      <stop offset="50%" style="stop-color:#dc2626;stop-opacity:0.2"/>
+      <stop offset="100%" style="stop-color:#991b1b;stop-opacity:0"/>
+    </linearGradient>
+    <linearGradient id="doc" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#334155;stop-opacity:0.8"/>
+      <stop offset="100%" style="stop-color:#1e293b;stop-opacity:0.6"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="rayGlow">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
+    <filter id="redGlow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect x="20" y="20" width="320" height="320" rx="52" fill="url(#bg)"/>
+  <rect x="20" y="20" width="320" height="320" rx="52" fill="none" stroke="#334155" stroke-width="1.5"/>
+
+  <!-- === RED SCAN BEAMS (from eyes downward) === -->
+  <g opacity="0.55">
+    <polygon points="140,148 100,285 180,285" fill="url(#ray)" filter="url(#rayGlow)"/>
+    <polygon points="220,148 180,285 260,285" fill="url(#ray)" filter="url(#rayGlow)"/>
+    <polygon points="180,152 148,285 212,285" fill="url(#ray)" opacity="0.5" filter="url(#rayGlow)"/>
+  </g>
+
+  <!-- Scan rib lines (X-ray feel) -->
+  <g stroke="#ef4444" stroke-width="0.7" opacity="0.2">
+    <line x1="125" y1="152" x2="100" y2="282"/>
+    <line x1="142" y1="153" x2="120" y2="282"/>
+    <line x1="158" y1="154" x2="148" y2="282"/>
+    <line x1="175" y1="155" x2="175" y2="282"/>
+    <line x1="192" y1="154" x2="202" y2="282"/>
+    <line x1="208" y1="153" x2="228" y2="282"/>
+    <line x1="225" y1="152" x2="254" y2="282"/>
+    <line x1="240" y1="151" x2="268" y2="282"/>
+  </g>
+
+  <!-- Horizontal scan sweep -->
+  <g stroke="#dc2626" stroke-width="0.5" opacity="0.15">
+    <line x1="100" y1="200" x2="260" y2="200"/>
+    <line x1="108" y1="220" x2="254" y2="220"/>
+    <line x1="118" y1="240" x2="244" y2="240"/>
+    <line x1="130" y1="260" x2="234" y2="260"/>
+  </g>
+
+  <!-- === SKILL DOCUMENT === -->
+  <g transform="translate(132, 228)">
+    <rect x="0" y="0" width="96" height="72" rx="5" fill="url(#doc)" stroke="#475569" stroke-width="1.2"/>
+    <path d="M72,0 L96,0 L96,24 Z" fill="#1e293b" opacity="0.5"/>
+    <path d="M72,0 L72,24 L96,24" fill="none" stroke="#475569" stroke-width="0.8"/>
+    <!-- Revealed text lines -->
+    <g stroke="#ef4444" stroke-width="1" opacity="0.45">
+      <line x1="14" y1="18" x2="68" y2="18"/>
+      <line x1="14" y1="28" x2="58" y2="28"/>
+      <line x1="14" y1="38" x2="62" y2="38"/>
+      <line x1="14" y1="48" x2="42" y2="48"/>
+    </g>
+    <!-- Score badge -->
+    <circle cx="78" cy="52" r="13" fill="#0f172a" stroke="#ef4444" stroke-width="1.2" opacity="0.85"/>
+    <text x="78" y="56" text-anchor="middle" font-family="'SF Pro Display','Segoe UI',Arial,sans-serif" font-size="10" font-weight="700" fill="#ef4444">?/10</text>
+  </g>
+
+  <!-- === LEFT EYE (narrow, sharp, looking down) === -->
+  <g transform="translate(72, 82)">
+    <!-- Eye outline - narrower almond = sharper gaze -->
+    <path d="M0,34 Q68,-28 136,34 Q68,96 0,34 Z" fill="#1a0a0a" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Red glow behind iris -->
+    <circle cx="68" cy="38" r="32" fill="#dc2626" opacity="0.08" filter="url(#redGlow)"/>
+    <!-- Iris (red gradient) -->
+    <circle cx="68" cy="38" r="28" fill="url(#eye)" opacity="0.9" filter="url(#glow)"/>
+    <!-- Inner iris ring (adds intensity) -->
+    <circle cx="68" cy="38" r="22" fill="none" stroke="#b91c1c" stroke-width="1.5" opacity="0.5"/>
+    <!-- Pupil (narrow slit - predator look, shifted down) -->
+    <ellipse cx="68" cy="43" rx="8" ry="16" fill="#050505"/>
+    <!-- Slight red ring inside pupil edge -->
+    <ellipse cx="68" cy="43" rx="9" ry="17" fill="none" stroke="#dc2626" stroke-width="0.8" opacity="0.4"/>
+    <!-- Reflection (small, sharp) -->
+    <circle cx="61" cy="32" r="3.5" fill="#fef2f2" opacity="0.85"/>
+    <circle cx="74" cy="46" r="1.5" fill="#fff" opacity="0.35"/>
+    <!-- Heavy upper lid (squinting = piercing) -->
+    <path d="M5,28 Q35,10 68,14 Q100,10 131,28" fill="#0f172a" opacity="0.6"/>
+    <!-- Brow - sharply angled down -->
+    <path d="M0,12 Q34,-8 68,0" fill="none" stroke="#e2e8f0" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- === RIGHT EYE (narrow, sharp, looking down) === -->
+  <g transform="translate(152, 82)">
+    <path d="M0,34 Q68,-28 136,34 Q68,96 0,34 Z" fill="#1a0a0a" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="68" cy="38" r="32" fill="#dc2626" opacity="0.08" filter="url(#redGlow)"/>
+    <circle cx="68" cy="38" r="28" fill="url(#eye)" opacity="0.9" filter="url(#glow)"/>
+    <circle cx="68" cy="38" r="22" fill="none" stroke="#b91c1c" stroke-width="1.5" opacity="0.5"/>
+    <ellipse cx="68" cy="43" rx="8" ry="16" fill="#050505"/>
+    <ellipse cx="68" cy="43" rx="9" ry="17" fill="none" stroke="#dc2626" stroke-width="0.8" opacity="0.4"/>
+    <circle cx="61" cy="32" r="3.5" fill="#fef2f2" opacity="0.85"/>
+    <circle cx="74" cy="46" r="1.5" fill="#fff" opacity="0.35"/>
+    <path d="M5,28 Q35,10 68,14 Q100,10 131,28" fill="#0f172a" opacity="0.6"/>
+    <path d="M68,0 Q102,-8 136,12" fill="none" stroke="#e2e8f0" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Connecting brow arch -->
+  <path d="M60,82 Q180,62 300,82" fill="none" stroke="#94a3b8" stroke-width="1.8" opacity="0.25"/>
+
+  <!-- === TEXT === -->
+  <text x="180" y="310" text-anchor="middle" font-family="'SF Pro Display','Segoe UI',Arial,sans-serif" font-size="32" font-weight="700" fill="#e2e8f0" letter-spacing="5">SF</text>
+  <text x="180" y="330" text-anchor="middle" font-family="'SF Pro Display','Segoe UI',Arial,sans-serif" font-size="9" font-weight="400" fill="#64748b" letter-spacing="6">SKILLFATHER</text>
+</svg>
