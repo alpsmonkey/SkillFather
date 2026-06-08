@@ -1,0 +1,12 @@
+# SkillFit
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+*.html
+*.md
+!README.md
+!LICENSE
+!templates/report.html

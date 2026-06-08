@@ -1,0 +1,6 @@
+# No external dependencies required for basic functionality
+# LLM mode requires only stdlib (urllib) - no third-party packages needed
+
+# Optional development dependencies
+# pytest>=7.0
+# ruff>=0.1.0

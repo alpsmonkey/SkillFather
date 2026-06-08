@@ -1,0 +1,27 @@
+{
+  "name": "stock-analysis-assistant",
+  "description": "获取股票实时数据并分析趋势",
+  "trigger_words": ["股票分析", "股价查询", "行情分析", "stock"],
+  "input_parameters": {
+    "type": "object",
+    "properties": {
+      "stock_code": {
+        "type": "string",
+        "description": "股票代码，如 000001"
+      },
+      "analysis_period": {
+        "type": "string",
+        "description": "分析周期",
+        "enum": ["1周", "1月", "3月", "1年"]
+      }
+    },
+    "required": ["stock_code"]
+  },
+  "output_template": "## {{stock_name}} ({{stock_code}}) 分析报告\n\n当前价格: {{current_price}}\n涨跌幅: {{change_rate}}%\n趋势判断: {{trend}}",
+  "workflow": [
+    {"type": "start", "title": "开始", "inputs": ["stock_code", "analysis_period"]},
+    {"type": "llm", "title": "分析决策", "model": "gpt-4"},
+    {"type": "code", "title": "获取数据", "language": "python"},
+    {"type": "end", "title": "输出报告"}
+  ]
+}

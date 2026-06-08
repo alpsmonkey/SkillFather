@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{SKILL_NAME}} - SkillFit 适配度分析报告</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f8fafc;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-secondary: #64748b;
+    --primary: {{SCORE_COLOR}};
+    --primary-light: #eff6ff;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+
+  .header .subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  /* ── Score Card ──────────────────────────── */
+  .score-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+
+  .score-value {
+    font-size: 4.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  .score-label {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+  }
+
+  .score-bar-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto 1.25rem;
+    background: #e2e8f0;
+    border-radius: 6px;
+    height: 10px;
+    overflow: hidden;
+  }
+
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: var(--primary);
+    width: {{SCORE_FILL_PCT}}%;
+    transition: width 0.8s ease;
+  }
+
+  .recommendation {
+    font-size: 0.95rem;
+    color: var(--text);
+    padding: 0.75rem 1rem;
+    background: var(--primary-light);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary);
+    text-align: left;
+  }
+
+  .details-note {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.75rem;
+    font-style: italic;
+  }
+
+  /* ── Dimension Scores ────────────────────── */
+  .section-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dimensions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .dim-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 1rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+
+  .dim-card .dim-score {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .dim-card .dim-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  /* ── Questions ───────────────────────────── */
+  .question-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .question-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    border-left: 4px solid #94a3b8;
+  }
+
+  .question-card .q-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+  }
+
+  .question-card .q-id {
+    font-weight: 700;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+
+  .question-card .q-dimension {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 12px;
+    background: #e2e8f0;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  .question-card .q-text {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+  }
+
+  .question-card .q-explanation {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    padding-left: 0.75rem;
+    border-left: 2px solid #e2e8f0;
+  }
+
+  .question-card .q-score {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  /* ── Skill Meta ─────────────────────────── */
+  .skill-meta {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    margin-bottom: 2rem;
+  }
+
+  .skill-meta h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 0.5rem 1rem;
+    font-size: 0.88rem;
+  }
+
+  .meta-grid .label {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .meta-grid .value {
+    color: var(--text);
+    word-break: break-all;
+  }
+
+  /* ── Footer ──────────────────────────────── */
+  .footer {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Responsive ─────────────────────────── */
+  @media (max-width: 600px) {
+    body { padding: 1rem; }
+    .score-value { font-size: 3.5rem; }
+    .dimensions { grid-template-columns: repeat(2, 1fr); }
+    .meta-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🛠️ {{SKILL_NAME}} - 适配度分析报告</h1>
+  <div class="subtitle">WorkBuddy SKILL 适配度评估 · 由 SkillFit 自动生成</div>
+  <div class="meta-row">
+    <span>📅 {{SCHEDULED_TIME}}</span>
+    <span>📁 {{SKILL_PATH}}</span>
+  </div>
+</div>
+
+<div class="score-card">
+  <div class="score-value">{{OVERALL_SCORE}}</div>
+  <div class="score-label">综合适配度评分（满分 10 分）</div>
+  <div class="score-bar-container">
+    <div class="score-bar-fill"></div>
+  </div>
+  <div class="recommendation">{{RECOMMENDATION}}</div>
+  <div class="details-note">{{DETAILS}}</div>
+</div>
+
+<div class="section-title">📊 维度评分</div>
+<div class="dimensions" id="dimensions-container"></div>
+
+<div class="section-title">❓ 诊断问题清单</div>
+<div class="question-list" id="questions-container"></div>
+
+<div class="skill-meta">
+  <h3>📋 SKILL 元信息</h3>
+  <div class="meta-grid" id="meta-container"></div>
+</div>
+
+<div class="footer">
+  Powered by <strong>SkillFit</strong> · WorkBuddy SKILL 适配度分析工具
+</div>
+
+<script>
+// Dimension data
+const dimensions = {{DIMENSION_DATA}};
+const questions = {{QUESTIONS_DATA}};
+const skillMeta = {{SKILL_META}};
+
+// Render dimensions
+(function() {
+  const container = document.getElementById('dimensions-container');
+  dimensions.forEach(dim => {
+    const card = document.createElement('div');
+    card.className = 'dim-card';
+    card.innerHTML = `
+      <div class="dim-score" style="color: ${dim.color}">${dim.score.toFixed(1)}</div>
+      <div class="dim-label">${dim.label}</div>
+    `;
+    container.appendChild(card);
+  });
+})();
+
+// Render questions
+(function() {
+  const container = document.getElementById('questions-container');
+  const dimColors = {
+    use_case: '#3B82F6',
+    environment: '#10B981',
+    prerequisites: '#F59E0B',
+    workflow: '#8B5CF6',
+    documentation: '#EF4444'
+  };
+  questions.forEach(q => {
+    const color = dimColors[q.dimension_key] || '#94a3b8';
+    const scoreText = q.score != null ? `${(q.score * 10).toFixed(1)} / 10` : '未评分';
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.style.borderLeftColor = color;
+    card.innerHTML = `
+      <div class="q-header">
+        <span class="q-id">Q${q.id}</span>
+        <span class="q-dimension" style="background: ${color}20; color: ${color}">${q.dimension}</span>
+      </div>
+      <div class="q-text">${q.text}</div>
+      <div class="q-explanation">${q.explanation}</div>
+      <div class="q-score">评分: ${scoreText} · 权重: ${q.weight}</div>
+    `;
+    container.appendChild(card);
+  });
+})();
+
+// Render skill meta
+(function() {
+  const container = document.getElementById('meta-container');
+  const fields = [
+    { label: '名称', value: skillMeta.name },
+    { label: '描述', value: skillMeta.summary || '无' },
+    { label: '触发词', value: skillMeta.triggers || '未检测到' },
+    { label: '前置条件', value: skillMeta.requirements || '未检测到' },
+    { label: '工具依赖', value: skillMeta.tools || '未检测到' },
+    { label: '功能描述', value: skillMeta.capabilities || '未检测到' },
+    { label: '文档章节', value: skillMeta.section_count + ' 个' },
+    { label: '指令行数', value: skillMeta.line_count + ' 行' },
+  ];
+  fields.forEach(f => {
+    const labelEl = document.createElement('div');
+    labelEl.className = 'label';
+    labelEl.textContent = f.label;
+    const valueEl = document.createElement('div');
+    valueEl.className = 'value';
+    valueEl.textContent = f.value;
+    container.appendChild(labelEl);
+    container.appendChild(valueEl);
+  });
+})();
+</script>
+
+</body>
+</html>
