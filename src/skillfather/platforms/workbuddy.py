@@ -8,12 +8,11 @@ Resources: scripts/, references/, assets/
 
 from pathlib import Path
 from skillfather.platforms.base import (
-    PlatformAdapter, PlatformInfo, register_platform, _parse_yaml_frontmatter
+    PlatformAdapter, PlatformInfo, _parse_yaml_frontmatter
 )
 from skillfather.parser import SkillProfile, _parse_content
 
 
-@register_platform("workbuddy")
 class WorkBuddyAdapter(PlatformAdapter):
 
     def info(self) -> PlatformInfo:

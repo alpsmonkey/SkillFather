@@ -23,12 +23,11 @@ import re
 import zipfile
 from pathlib import Path
 from skillfather.platforms.base import (
-    PlatformAdapter, PlatformInfo, register_platform
+    PlatformAdapter, PlatformInfo
 )
 from skillfather.parser import SkillProfile
 
 
-@register_platform("coze")
 class CozeAdapter(PlatformAdapter):
 
     def info(self) -> PlatformInfo:

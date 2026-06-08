@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/版本-v0.2.0-orange" alt="版本" />
+  <img src="https://img.shields.io/badge/版本-v0.2.1-orange" alt="版本" />
   <img src="https://img.shields.io/badge/许可证-MIT-blue" alt="许可证" />
   <img src="https://img.shields.io/badge/支持平台-6-green" alt="平台数" />
 </p>

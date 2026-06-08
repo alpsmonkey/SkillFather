@@ -9,7 +9,7 @@ Supports parsing skills from different Agent platforms:
 - Hermes Agent (SKILL.md with Hermes-specific frontmatter)
 """
 
-from skillfather.platforms.base import PlatformAdapter, PlatformInfo, register_platform
+from skillfather.platforms.base import PlatformAdapter, PlatformInfo
 from skillfather.platforms.workbuddy import WorkBuddyAdapter
 from skillfather.platforms.codebuddy import CodeBuddyAdapter
 from skillfather.platforms.codex import CodexAdapter

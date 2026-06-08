@@ -12,12 +12,11 @@ and the product branding.
 
 from pathlib import Path
 from skillfather.platforms.base import (
-    PlatformAdapter, PlatformInfo, register_platform, _parse_yaml_frontmatter
+    PlatformAdapter, PlatformInfo, _parse_yaml_frontmatter
 )
 from skillfather.parser import SkillProfile
 
 
-@register_platform("codebuddy")
 class CodeBuddyAdapter(PlatformAdapter):
 
     def info(self) -> PlatformInfo:

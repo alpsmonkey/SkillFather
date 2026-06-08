@@ -65,17 +65,5 @@ class PlatformAdapter(ABC):
         return self.info().name
 
 
-# Platform registry
-_PLATFORM_REGISTRY: dict[str, type[PlatformAdapter]] = {}
-
-
-def register_platform(name: str):
-    """Decorator to register a platform adapter."""
-    def decorator(cls):
-        _PLATFORM_REGISTRY[name.lower()] = cls
-        return cls
-    return decorator
-
-
 # Re-export for backward compatibility with any code importing from this module
 _parse_yaml_frontmatter = parse_yaml_frontmatter

@@ -81,12 +81,12 @@ _TEMPLATES: list[dict] = [
         "check_fn": "_check_environment",
         "primary": {
             "condition": "has_tools",
-            "text": "你的 WorkBuddy 环境中是否已安装/配置了以下工具：{tools}？",
+            "text": "你的 Agent 环境中是否已安装/配置了以下工具：{tools}？",
             "explanation": "该 Skill 依赖特定的 MCP 工具或连接器。缺少这些依赖会导致 Skill 无法正常执行。",
         },
         "fallback": {
             "condition": "always",
-            "text": "该 Skill 的运行环境（{summary}）是否与你当前的 WorkBuddy 配置兼容？",
+            "text": "该 Skill 的运行环境（{summary}）是否与你当前的 Agent 配置兼容？",
             "explanation": "运行时依赖是 Skill 正常工作的基础。环境不匹配会导致安装后无法使用。",
         },
     },
@@ -266,7 +266,7 @@ def generate_questions_llm(profile: SkillProfile, config: LLMConfig, num_questio
 
     This mode requires an OpenAI-compatible API key.
     """
-    system_prompt = """你是一个 WorkBuddy SKILL 适配度分析专家。你的任务是从使用者的角度，基于 SKILL.md 的内容，生成 6-10 个诊断性问题，帮助用户判断该 SKILL 是否适用于自己的工作场景。
+    system_prompt = """你是一个 Agent Skill 适配度分析专家。你的任务是从使用者的角度，基于 SKILL.md 的内容，生成 6-10 个诊断性问题，帮助用户判断该 SKILL 是否适用于自己的工作场景。
 
 要求：
 1. 问题必须覆盖以下维度：

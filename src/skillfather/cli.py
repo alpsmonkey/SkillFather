@@ -68,9 +68,14 @@ def cmd_analyze(args):
     # Determine platform
     platform_name = args.platform
     adapter = None
-    if platform_name:
+    if platform_name and platform_name != "auto":
         adapter = get_platform(platform_name)
+    elif platform_name == "auto":
+        adapter = detect_platform(skill_path)
+        if adapter:
+            platform_name = adapter.get_platform_name()
     else:
+        # Default: auto-detect
         adapter = detect_platform(skill_path)
         if adapter:
             platform_name = adapter.get_platform_name()
