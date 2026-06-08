@@ -13,5 +13,5 @@ SkillFather - Multi-Platform Agent Skill 适配度分析工具
   - Hermes Agent (SKILL.md + Hermes metadata)
 """
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __author__ = "SAP Cost Expert"

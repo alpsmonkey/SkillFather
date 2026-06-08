@@ -14,33 +14,36 @@ You are a skill fitness analyst. When the user provides a skill file path, use S
 - User asks "should I install this skill?"
 - Trigger keywords: analyze skill, evaluate skill, skill fitness
 
-## Analysis Steps
+## Core Flow: Choose Analysis Mode
 
-1. Get the skill file path from $ARGUMENTS
+**Step 0**: Get the skill file path from $ARGUMENTS
+
+**Step 1**: Ask the user to choose a mode:
+
+| Mode | Description | Best For |
+|------|-------------|----------|
+| **Memory-based Analysis** | Agent uses its memory (installed skills, tools, user profile) to personalize interpretation | Most personalized result |
+| **Interactive Analysis** | Agent asks each question, user answers based on reality | Deep evaluation |
+| **Auto Analysis** | CLI auto-estimates from content features | Quick preview |
+
+**Step 2**: Execute the chosen mode.
+
+### Mode 1: Memory-based
+1. Gather context from memory files, installed skills, tool environment
 2. Run: `python -m skillfather analyze "<skill_path>"`
-3. Platform options: `--platform workbuddy|codebuddy|codex|claude-code|coze|hermes|auto`
-4. Output formats: `--format console|html|markdown|all`
-5. Present results to the user
+3. Personalize each dimension's score interpretation based on user context
+4. Output: Markdown table with personalized analysis
 
-### Examples
+### Mode 2: Interactive
+1. Run CLI to get questions: `python -m skillfather analyze "<skill_path>"`
+2. Extract questions, ask user each one (y/p/n or 1-10)
+3. Calculate scores from answers
+4. Output: Markdown table with questions, answers, and scores
 
-```bash
-# Basic analysis
-python -m skillfather analyze "$ARGUMENTS"
-
-# With platform
-python -m skillfather analyze "$ARGUMENTS" --platform claude-code
-
-# HTML report
-python -m skillfather analyze "$ARGUMENTS" --format html -o report.html
-
-# All formats
-python -m skillfather analyze "$ARGUMENTS" --format all
-
-# LLM enhanced (requires API key)
-export SKILLFATHER_API_KEY=sk-xxx
-python -m skillfather analyze "$ARGUMENTS" --llm
-```
+### Mode 3: Auto
+1. Run: `python -m skillfather analyze "<skill_path>"`
+2. Optional: `--format html|markdown|all`
+3. Present results directly
 
 ## Score Guide
 
@@ -55,4 +58,4 @@ python -m skillfather analyze "$ARGUMENTS" --llm
 
 - Evaluates **fitness only**, NOT security
 - Specify `--platform` if auto-detection fails
-- LLM mode requires user-provided API key
+- LLM mode requires SKILLFATHER_API_KEY

@@ -6,7 +6,7 @@ description: |
   输出 5 维度适配度评分（满分 10 分）。
   支持 WorkBuddy、CodeBuddy、Codex、Claude Code、Coze、Hermes Agent 六大平台。
   仅做适用性评审，不对安全性负责。
-version: 0.2.0
+version: 0.2.1
 read_when:
   - 用户要求分析、评估、评审一个 Skill 是否适用
   - 用户提到适配度、适合度、fitness、fitness analysis
@@ -36,37 +36,43 @@ SkillFather 从**使用角度**分析一个 Agent Skill 是否适用于当前用
 - 已执行 `pip install git+https://github.com/alpsmonkey/SkillFather.git`
 - 验证安装：`python -m skillfather --version`
 
-## 分析流程
+## 核心流程：选择分析模式
 
-**Step 1：确定 Skill 文件路径**
+**Step 0：确定 Skill 文件路径**
 - 如果用户提供了路径，直接使用
 - WorkBuddy: `~/.workbuddy/skills/<name>/SKILL.md`
 - Claude Code: `.claude/commands/<name>.md`
 - Codex: `.agents/skills/<name>/SKILL.md`
 
-**Step 2：执行分析命令**
+**Step 1：让用户选择分析模式**
 
-```bash
-# 规则引擎模式（零配置）
-python -m skillfather analyze <skill_path>
+| 模式 | 说明 | 适用场景 |
+|------|------|---------|
+| **基于记忆分析** | Agent 结合自身记忆（已装技能、工具环境、用户画像）个性化解读评分 | 想要最贴合自己的分析结果 |
+| **交互分析** | Agent 逐题提问，用户根据实际情况回答，得到精确评分 | 首次分析、需要深度了解 |
+| **自动分析** | 基于 Skill 内容特征自动估算评分，快速出结果 | 快速预览、不需要个性化 |
 
-# 指定平台
-python -m skillfather analyze <skill_path> --platform <platform>
+**Step 2：根据用户选择执行对应流程**
 
-# HTML 报告
-python -m skillfather analyze <skill_path> --format html -o <output.html>
+### 模式一：基于记忆分析
 
-# Markdown 报告
-python -m skillfather analyze <skill_path> --format markdown -o <output.md>
+1. **收集上下文**：Agent 读取记忆文件（`.workbuddy/memory/`）、已装技能列表（`~/.workbuddy/skills/`）、用户工具环境偏好
+2. **运行 CLI 分析**：`python -m skillfather analyze <skill_path>`
+3. **个性化解读**：基于收集到的上下文，对每个维度评分进行个性化调整和解读
+4. **输出**：Markdown 表格 + 文字解读，给出最终推荐结论
 
-# 全部格式
-python -m skillfather analyze <skill_path> --format all
-```
+### 模式二：交互分析
 
-**Step 3：展示结果**
-- 终端输出：直接展示
-- HTML 报告：使用 preview_url 预览
-- Markdown 报告：内联展示或作为附件
+1. **运行 CLI 获取题目**：`python -m skillfather analyze <skill_path>`
+2. **逐题交互**：从输出中提取诊断问题，逐题向用户提问（完全满足/部分满足/完全不满足）
+3. **计算评分**：根据用户回答计算各维度分数和总分
+4. **输出**：Markdown 表格展示每个问题的用户回答和评分
+
+### 模式三：自动分析
+
+1. **运行 CLI**：`python -m skillfather analyze <skill_path>`
+2. **可选格式**：`--format html|markdown|all`
+3. **展示结果**：直接展示 / preview_url 预览 HTML
 
 ## 评分判读
 
@@ -79,6 +85,6 @@ python -m skillfather analyze <skill_path> --format all
 
 ## 注意事项
 
-- 本工具仅评估**适用性**（是否适合你的使用场景），不涉及安全性审计
-- 规则引擎模式为离线零依赖分析，LLM 模式需要配置 API Key
+- 本工具仅评估**适用性**，不涉及安全性审计
 - 自动检测平台可能不准确，如有疑问请手动指定 `--platform`
+- LLM 模式需要配置 SKILLFATHER_API_KEY

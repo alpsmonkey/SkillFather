@@ -20,46 +20,54 @@ You are a skill fitness analyst. When the user provides a skill file or director
 - User wants to compare multiple skills
 - Trigger: analyze skill, evaluate skill, skill fitness, 适配度分析
 
-## How to Analyze
+## Core Flow: Choose Analysis Mode
 
-**Step 1**: Get the skill file path from the user:
+**Step 0**: Get the skill file path from the user:
 - If `$ARGUMENTS` is provided, use it as the path
 - If user references a Claude Code skill, it's at `.claude/commands/<name>.md`
 - If user references a WorkBuddy skill, it's at `~/.workbuddy/skills/<name>/SKILL.md`
 
-**Step 2**: Run the analysis:
+**Step 1**: Ask the user to choose an analysis mode. Present these options:
 
-```bash
-# Rule engine (zero config)
-python -m skillfather analyze "$ARGUMENTS"
+| Mode | Description | Best For |
+|------|-------------|----------|
+| **Memory-based Analysis** | Agent combines its memory (installed skills, tools, user profile) to personalize score interpretation | Most personalized result |
+| **Interactive Analysis** | Agent asks each question one by one, user answers based on actual situation | First-time analysis, deep evaluation |
+| **Auto Analysis** | CLI auto-estimates scores from Skill content features | Quick preview, no personalization needed |
 
-# Specify platform explicitly
-python -m skillfather analyze "$ARGUMENTS" --platform <platform>
+**Step 2**: Execute the chosen mode's workflow.
 
-# Generate HTML report
-python -m skillfather analyze "$ARGUMENTS" --format html -o skillfather_report.html
+---
 
-# Generate Markdown report
-python -m skillfather analyze "$ARGUMENTS" --format markdown -o skillfather_report.md
+### Mode 1: Memory-based Analysis
 
-# All formats at once
-python -m skillfather analyze "$ARGUMENTS" --format all
-```
+1. **Gather context**: Read your memory files, list installed skills, check user's tool environment
+2. **Run CLI**: `python -m skillfather analyze "<skill_path>"`
+3. **Personalize interpretation**: For each dimension, adjust the CLI output based on what you know about the user:
+   - Use-case Fit: Does this skill match the user's daily work?
+   - Environment Readiness: Are the required tools/dependencies already installed?
+   - Prerequisites: Are API keys and configs already set up?
+   - Workflow Match: Does it fit into the user's existing tool chain?
+   - Documentation: Your own assessment of doc quality
+4. **Output**: Markdown table with original score, personalization rationale, and final recommendation
 
-Supported `--platform` values: `workbuddy`, `codebuddy`, `codex`, `claude-code`, `coze`, `hermes`, `auto`
+### Mode 2: Interactive Analysis
 
-**Step 3**: Present the results:
-- Terminal output: display directly
-- HTML report: use `preview_url` to show
-- Markdown report: display inline or as attachment
+1. **Run CLI to get questions**: `python -m skillfather analyze "<skill_path>"`
+2. **Extract diagnostic questions** from the CLI output
+3. **Ask each question** to the user one by one:
+   - Options: `Fully meets (y)` / `Partially meets (p)` / `Does not meet (n)`
+   - Or let user enter a 1-10 number
+4. **Calculate scores** based on user answers (y=1.0, p=0.5, n=0.0, number/10)
+5. **Output**: Markdown table showing each question, user's answer, and score
 
-## LLM Mode (Optional)
+### Mode 3: Auto Analysis
 
-For deeper analysis, set API key first:
-```bash
-export SKILLFATHER_API_KEY=sk-xxx
-python -m skillfather analyze "$ARGUMENTS" --llm
-```
+1. **Run CLI**: `python -m skillfather analyze "<skill_path>"`
+2. **Optional formats**: `--format html|markdown|all`
+3. **Present results**: Display terminal output directly; use preview for HTML
+
+---
 
 ## Score Guide
 
@@ -74,4 +82,4 @@ python -m skillfather analyze "$ARGUMENTS" --llm
 
 - This tool evaluates **fitness/suitability only** - NOT security
 - Auto-detection may be inaccurate; specify `--platform` if in doubt
-- For LLM mode, the user must provide their own API key
+- For LLM mode, the user must provide their own API key (SKILLFATHER_API_KEY)

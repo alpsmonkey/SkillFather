@@ -6,7 +6,7 @@ description: |
   输出 5 维度适配度评分（满分 10 分）。
   支持 WorkBuddy、CodeBuddy、Codex、Claude Code、Coze、Hermes Agent 六大平台。
   仅做适用性评审，不对安全性负责。
-version: 0.2.0
+version: 0.2.1
 author: alpsmonkey
 license: MIT
 platforms: [macos, linux, windows]
@@ -38,41 +38,39 @@ Use this skill when the user asks to analyze, evaluate, or review an Agent Skill
 - SkillFather installed: `pip install git+https://github.com/alpsmonkey/SkillFather.git`
 - Verify: `python -m skillfather --version`
 
-## Analysis Steps
+## 核心流程：选择分析模式
 
-1. Get the skill file path from the user
-2. Run SkillFather analysis
+**Step 0：确定 Skill 文件路径**
 
-### Commands
+**Step 1：让用户选择分析模式**
 
-```bash
-# Basic analysis (rule engine, zero config)
-python -m skillfather analyze <skill_path>
+| 模式 | 说明 | 适用场景 |
+|------|------|---------|
+| **基于记忆分析** | Agent 结合自身记忆个性化解读评分 | 最贴合自己 |
+| **交互分析** | Agent 逐题提问，用户回答 | 深度评估 |
+| **自动分析** | 基于 Skill 内容特征自动估算 | 快速预览 |
 
-# Specify platform
-python -m skillfather analyze <skill_path> --platform <platform>
+**Step 2：根据选择执行**
 
-# HTML report
-python -m skillfather analyze <skill_path> --format html -o report.html
+### 模式一：基于记忆分析
 
-# Markdown report
-python -m skillfather analyze <skill_path> --format markdown -o report.md
+1. Agent 读取记忆文件、已装技能、工具环境
+2. 运行 `python -m skillfather analyze <skill_path>`
+3. 基于上下文个性化解读每个维度评分
+4. 输出 Markdown 表格 + 文字解读 + 最终推荐
 
-# All formats
-python -m skillfather analyze <skill_path> --format all
+### 模式二：交互分析
 
-# LLM enhanced (requires API key)
-export SKILLFATHER_API_KEY=sk-xxx
-python -m skillfather analyze <skill_path> --llm
-```
+1. 运行 `python -m skillfather analyze <skill_path>` 获取题目
+2. 逐题向用户提问（完全满足/部分满足/完全不满足）
+3. 根据回答计算评分
+4. 输出问题、回答、评分表格
 
-Supported platforms: `workbuddy`, `codebuddy`, `codex`, `claude-code`, `coze`, `hermes`, `auto`
+### 模式三：自动分析
 
-## Presenting Results
-
-- Terminal output: display directly
-- HTML report: use preview mechanism to show
-- Markdown report: display inline or as attachment
+1. 运行 `python -m skillfather analyze <skill_path>`
+2. 可选 `--format html|markdown|all`
+3. 直接展示结果
 
 ## Score Guide
 
