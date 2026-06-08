@@ -4,13 +4,13 @@ build-backend = "setuptools.backends._legacy:_Backend"
 
 [project]
 name = "skillfather"
-version = "0.2.0"
+version = "0.2.1"
 description = "Multi-Platform Agent Skill 适配度分析工具 - 支持 WorkBuddy/Codex/Claude Code/Coze/CodeBuddy/Hermes Agent（仅适用性评审，不涉及安全性审计）"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
 authors = [
-    {name = "SAP Cost Expert"},
+    {name = "alpsmonkey"},
 ]
 keywords = ["workbuddy", "codebuddy", "codex", "claude-code", "coze", "hermes", "skill", "analyzer", "fitness", "assessment", "agent"]
 classifiers = [
