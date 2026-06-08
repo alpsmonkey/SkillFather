@@ -83,83 +83,27 @@ def parse_skill(path: str | Path) -> SkillProfile:
 
 
 def _parse_frontmatter(content: str, profile: SkillProfile):
-    """Extract YAML frontmatter from SKILL.md.
+    """Extract YAML frontmatter from SKILL.md using base.py's advanced parser.
 
-    Handles both simple key: value and multi-line descriptions (using >).
+    Delegates to _parse_yaml_frontmatter which supports:
+    - Simple key: value pairs
+    - Inline lists [a, b, c]
+    - Indented list items (- item)
+    - Nested YAML (metadata.hermes.tags)
+    - Multi-line scalars (>, |)
+
+    Import is deferred to avoid circular dependency:
+    parser.py -> platforms.base -> parser.py (SkillProfile)
     """
-    pattern = r"^---\s*\n(.*?)\n---\s*\n"
-    match = re.match(pattern, content, re.DOTALL)
-    if not match:
+    from skillfather.platforms.base import _parse_yaml_frontmatter
+
+    fm, _ = _parse_yaml_frontmatter(content)
+    if not fm:
         return
 
-    yaml_str = match.group(1)
+    profile.frontmatter_raw = fm
 
-    # Handle multi-line values (YAML folded scalar ">" and literal block scalar "|")
-    unfolded_lines: list[str] = []
-    in_multiline = False
-    multiline_key = ""
-    multiline_value = ""
-    multiline_literal = False  # True for "|", False for ">"
-
-    for line in yaml_str.split("\n"):
-        stripped = line.strip()
-
-        if in_multiline:
-            # Lines that are empty or start a new key end multiline
-            if stripped == "" and multiline_value:
-                if multiline_literal:
-                    # Literal scalar: empty line = empty line
-                    multiline_value += "\n"
-                else:
-                    # Folded scalar: empty line = space
-                    multiline_value += " "
-                continue
-            if stripped and not stripped.startswith(("- ", "* ", "#")):
-                # Continuation of multiline value
-                if multiline_literal:
-                    multiline_value += "\n" + stripped
-                else:
-                    multiline_value += " " + stripped
-                continue
-            # Something else (list item etc.) - end multiline
-            unfolded_lines.append(f"{multiline_key}: {multiline_value.strip()}")
-            in_multiline = False
-            multiline_value = ""
-            if stripped:
-                unfolded_lines.append(stripped)
-            continue
-
-        # Check for key: > or key: | pattern (YAML block scalars)
-        fm_match = re.match(r"^(\w+)\s*:\s*[>|]$", stripped)
-        if fm_match:
-            multiline_key = fm_match.group(1)
-            multiline_literal = "|" in stripped
-            in_multiline = True
-            continue
-
-        if ":" in stripped:
-            unfolded_lines.append(stripped)
-
-    if in_multiline and multiline_value:
-        unfolded_lines.append(f"{multiline_key}: {multiline_value.strip()}")
-
-    for line in unfolded_lines:
-        line = line.strip()
-        if ":" not in line:
-            continue
-        key, _, value = line.partition(":")
-        key = key.strip().strip("\"'")
-        value = value.strip()
-        # Handle list values like [a, b, c]
-        if value.startswith("[") and value.endswith("]"):
-            items = value.strip("[]").split(",")
-            profile.frontmatter_raw[key] = [i.strip().strip("\"'-") for i in items if i.strip()]
-        elif value:
-            profile.frontmatter_raw[key] = value.strip("\"'")
-        else:
-            profile.frontmatter_raw[key] = ""
-
-    # Map common frontmatter fields
+    # Map common frontmatter fields (flatten top-level only)
     profile.name = (
         profile.frontmatter_raw.get("title", "")
         or profile.frontmatter_raw.get("name", "")
@@ -168,10 +112,13 @@ def _parse_frontmatter(content: str, profile: SkillProfile):
         profile.frontmatter_raw.get("summary", "")
         or profile.frontmatter_raw.get("description", "")
     )
+    # Normalize to string (base.py may return list for multi-line values)
+    if isinstance(raw_summary, list):
+        raw_summary = " ".join(str(s) for s in raw_summary)
     # Normalize multi-line summary to single line
-    profile.summary = re.sub(r"\s*\n\s*", " ", raw_summary).strip()
+    profile.summary = re.sub(r"\s*\n\s*", " ", str(raw_summary)).strip()
 
-    read_when = profile.frontmatter_raw.get("read_when", "")
+    read_when = profile.frontmatter_raw.get("read_when", [])
     if isinstance(read_when, list):
         profile.read_when = read_when
     elif isinstance(read_when, str) and read_when.strip():
@@ -243,7 +190,7 @@ def _extract_triggers(body: str, profile: SkillProfile):
 
     # Pattern 2: inline trigger patterns
     inline_patterns = [
-        r"(?:触发[词条件]：?\s*)([^\n]+)",
+        r"(?:触发(?:词|条件)：?\s*)([^\n]+)",
         r"(?:适用场景[：:]?\s*)([^\n]+)",
     ]
     for pattern in inline_patterns:
@@ -313,10 +260,16 @@ def _extract_dependencies(body: str, profile: SkillProfile):
     dep_section = _get_section_text(body, ["依赖", "Dependencies", "工具依赖", "知识库配置"])
 
     if dep_section:
-        # Extract specific tool names
+        # Extract list items (- xxx) from the section
+        list_items = re.findall(r"[-•]\s*(.+)", dep_section)
+        for item in list_items:
+            cleaned = item.strip().strip("`'\"")
+            if len(cleaned) >= 3:
+                profile.tools_required.append(cleaned)
+
+        # Extract inline "工具：xxx" patterns
         tool_names = re.findall(r"(?:工具[：:]?\s*)([^\n]+)", dep_section)
         for name in tool_names:
-            # Split by comma/semicolon
             tools = re.split(r"[,，、;；]", name.strip())
             for t in tools:
                 t = t.strip().strip("`'\"")
@@ -383,7 +336,7 @@ def _deduplicate(lst: list, min_len: int = 2):
     unique = []
     for item in lst:
         # Strip common markdown formatting but preserve underscores (needed for tool names)
-        cleaned = re.sub(r"[*`\[\]#>]", "", item).strip()
+        cleaned = re.sub(r"[*`\[\]#>\-]", "", item).strip()
         normalized = cleaned.lower()
         if normalized not in seen and len(cleaned) >= min_len:
             seen.add(normalized)

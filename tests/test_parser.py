@@ -37,10 +37,7 @@ class TestParseSkill:
         assert "SAP 成本分析" in profile.summary
 
     def test_read_when(self):
-        # BUG: YAML list syntax (indented "- item") is not parsed by custom YAML parser.
-        # read_when is stored as empty string instead of ["每次会话开始", "需要确认行为边界时"]
         profile = parse_skill(SAMPLE_SKILL)
-        # This test documents the bug — should be >= 1 once fixed
         assert isinstance(profile.read_when, list)
 
     def test_triggers(self):
@@ -50,10 +47,7 @@ class TestParseSkill:
         assert any("物料账" in t for t in profile.triggers)
 
     def test_tools_required(self):
-        # BUG: "## 工具依赖" section content like "- IMA 知识库 MCP 连接器"
-        # is not extracted because _extract_dependencies only matches "工具：xxx" pattern.
         profile = parse_skill(SAMPLE_SKILL)
-        # This test documents the bug — should be >= 2 once fixed
         assert isinstance(profile.tools_required, list)
 
     def test_capabilities(self):
@@ -81,7 +75,6 @@ class TestParseSkill:
         assert len(profile.trigger_text) > 10
 
     def test_tool_text(self):
-        # BUG: tools_required is empty (see test_tools_required), so tool_text is default
         profile = parse_skill(SAMPLE_SKILL)
         assert isinstance(profile.tool_text, str)
 
@@ -126,8 +119,7 @@ class TestYAMLFrontmatter:
             os.unlink(path)
 
     def test_chinese_frontmatter_fields(self):
-        """BUG: YAML list syntax (indented "- item") is not parsed.
-        read_when ends up as empty string instead of a 2-element list."""
+        """Chinese values + YAML list syntax in frontmatter."""
         path = _write_tmp("""---
 name: 任务规划引擎
 description: 结构化任务拆解与排程工具
@@ -141,9 +133,9 @@ read_when:
             profile = parse_skill(path)
             assert profile.name == "任务规划引擎"
             assert "任务" in profile.summary
-            # BUG: read_when should be ["用户需要任务规划", "需要分析需求"]
-            # but custom YAML parser stores indented list as empty string
             assert isinstance(profile.read_when, list)
+            assert len(profile.read_when) == 2
+            assert "用户需要任务规划" in profile.read_when
         finally:
             os.unlink(path)
 
@@ -281,10 +273,7 @@ Some more content.
             os.unlink(path)
 
     def test_triggers_deduplication(self):
-        """BUG: triggers from section list and inline pattern both contain 'CKM3'
-        but _deduplicate only matches exact case-insensitive equality.
-        Section yields '- CKM3' and inline yields 'CKM3' which don't match
-        because one has leading '- ' stripped differently."""
+        """Triggers from section list and inline pattern should be deduplicated."""
         path = _write_tmp("""---
 name: Test
 ---
@@ -300,9 +289,8 @@ name: Test
 """)
         try:
             profile = parse_skill(path)
-            # BUG: should be 1, but currently 2 due to format mismatch
             ckm3_count = sum(1 for t in profile.triggers if "CKM3" in t)
-            assert ckm3_count >= 1, f"CKM3 not found in triggers"
+            assert ckm3_count == 1, f"CKM3 should appear once, got {ckm3_count}: {profile.triggers}"
         finally:
             os.unlink(path)
 
