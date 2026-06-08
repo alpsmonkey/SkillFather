@@ -68,16 +68,8 @@ def generate_markdown_report(result: AnalysisResult, output_path: str | Path | N
     lines.append("| 维度 | 评分 | 说明 |")
     lines.append("|------|------|------|")
 
-    dim_labels = {
-        "use_case": "用例契合度",
-        "environment": "环境就绪度",
-        "prerequisites": "前置条件",
-        "workflow": "工作流匹配",
-        "documentation": "文档质量",
-    }
-
     for ds in result.dimension_scores:
-        label = dim_labels.get(ds.key, ds.label)
+        label = _DIM_LABELS.get(ds.key, ds.label)
         lines.append(f"| {label} | {ds.score:.1f}/10 | 共 {len(ds.questions)} 个诊断项 |")
 
     # Questions
@@ -85,7 +77,7 @@ def generate_markdown_report(result: AnalysisResult, output_path: str | Path | N
     lines.append("## 诊断问题清单\n")
 
     for q in result.questions:
-        dim_label = dim_labels.get(q.dimension, q.dimension_label)
+        dim_label = _DIM_LABELS.get(q.dimension, q.dimension_label)
         lines.append(f"\n### Q{q.id}. {q.text}\n")
         lines.append(f"- **维度**：{dim_label}")
         lines.append(f"- **评分权重**：{q.weight:.0%}")
@@ -112,28 +104,45 @@ def generate_markdown_report(result: AnalysisResult, output_path: str | Path | N
     return md
 
 
-def _render_template(template: str, result: AnalysisResult) -> str:
-    """Render HTML template with analysis data."""
-    # Build dimension data
-    dim_data = []
-    dim_labels = {
-        "use_case": "用例契合度",
-        "environment": "环境就绪度",
-        "prerequisites": "前置条件",
-        "workflow": "工作流匹配",
-        "documentation": "文档质量",
-    }
-    dim_colors = {
+def _get_score_color(score: float) -> str:
+    """Return hex color for a given overall score."""
+    if score >= 8:
+        return "#10B981"
+    elif score >= 6:
+        return "#3B82F6"
+    elif score >= 4:
+        return "#F59E0B"
+    else:
+        return "#EF4444"
+
+
+def _get_dim_color(dim_key: str) -> str:
+    """Return hex color for a dimension key."""
+    return {
         "use_case": "#3B82F6",
         "environment": "#10B981",
         "prerequisites": "#F59E0B",
         "workflow": "#8B5CF6",
         "documentation": "#EF4444",
-    }
+    }.get(dim_key, "#6B7280")
 
+
+_DIM_LABELS = {
+    "use_case": "用例契合度",
+    "environment": "环境就绪度",
+    "prerequisites": "前置条件",
+    "workflow": "工作流匹配",
+    "documentation": "文档质量",
+}
+
+
+def _render_template(template: str, result: AnalysisResult) -> str:
+    """Render HTML template with analysis data."""
+    # Build dimension data
+    dim_data = []
     for ds in result.dimension_scores:
-        label = dim_labels.get(ds.key, ds.label)
-        color = dim_colors.get(ds.key, "#6B7280")
+        label = _DIM_LABELS.get(ds.key, ds.label)
+        color = _get_dim_color(ds.key)
         dim_data.append({
             "key": ds.key,
             "label": label,
@@ -147,7 +156,7 @@ def _render_template(template: str, result: AnalysisResult) -> str:
         {
             "id": q.id,
             "text": q.text,
-            "dimension": dim_labels.get(q.dimension, q.dimension_label),
+            "dimension": _DIM_LABELS.get(q.dimension, q.dimension_label),
             "dimension_key": q.dimension,
             "explanation": q.explanation,
             "weight": f"{q.weight:.0%}",
@@ -171,15 +180,8 @@ def _render_template(template: str, result: AnalysisResult) -> str:
     }, ensure_ascii=False, indent=2)
 
     # Score color
+    score_color = _get_score_color(result.overall_score)
     score = result.overall_score
-    if score >= 8:
-        score_color = "#10B981"
-    elif score >= 6:
-        score_color = "#3B82F6"
-    elif score >= 4:
-        score_color = "#F59E0B"
-    else:
-        score_color = "#EF4444"
 
     html = template.replace("{{SCHEDULED_TIME}}", datetime.now().strftime("%Y-%m-%d %H:%M"))
     html = html.replace("{{SKILL_NAME}}", skill.display_name)
@@ -198,6 +200,16 @@ def _render_template(template: str, result: AnalysisResult) -> str:
 
 def _generate_inline_html(result: AnalysisResult) -> str:
     """Fallback inline HTML generator when template is not available."""
+    score_color = _get_score_color(result.overall_score)
+    question_cards = ""
+    for q in result.questions:
+        dim_color = _get_dim_color(q.dimension)
+        question_cards += (
+            f'<div class="question" style="border-left-color:{dim_color}">'
+            f'<h3>Q{q.id}. {q.text}</h3>'
+            f"<p><em>{_DIM_LABELS.get(q.dimension, q.dimension_label)}</em> | {q.explanation}</p>"
+            f"</div>\n"
+        )
     return f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -206,14 +218,14 @@ def _generate_inline_html(result: AnalysisResult) -> str:
 <title>{result.skill.display_name} - SkillFather Report</title>
 <style>
 body {{ font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }}
-.score {{ font-size: 4rem; font-weight: bold; color: #3B82F6; text-align: center; }}
-.question {{ margin: 1.5rem 0; padding: 1rem; border-left: 4px solid #3B82F6; background: #f8fafc; }}
+.score {{ font-size: 4rem; font-weight: bold; color: {score_color}; text-align: center; }}
+.question {{ margin: 1.5rem 0; padding: 1rem; border-left: 4px solid {score_color}; background: #f8fafc; }}
 </style>
 </head>
 <body>
 <h1>{result.skill.display_name} - 适配度分析</h1>
 <div class="score">{result.overall_score:.1f}/10</div>
 <p>{result.recommendation}</p>
-{''.join(f'<div class="question"><h3>Q{q.id}. {q.text}</h3><p>{q.explanation}</p></div>' for q in result.questions)}
+{question_cards}
 </body>
 </html>"""

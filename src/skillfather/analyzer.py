@@ -8,6 +8,16 @@ from typing import Optional
 from skillfather.parser import parse_skill, SkillProfile
 from skillfather.config import LLMConfig, AnalysisConfig
 
+# --- Auto-score estimation constants ---
+# Per-question deterministic variance to spread scores within each dimension,
+# preventing all questions in a dimension from receiving identical scores.
+_VARIANCE_SPREAD_FACTOR = 7       # Prime multiplier for hash-like distribution
+_VARIANCE_MODULUS = 17             # Prime modulus for hash-like distribution
+_VARIANCE_CENTER_OFFSET = 8       # Centers the range around zero (mod/2)
+_VARIANCE_SCALE = 100.0           # Divisor converts to ±0.08 range
+_VARIANCE_MIN_SCORE = 0.05         # Floor clamp to avoid zero/negative scores
+_VARIANCE_MAX_SCORE = 0.95         # Ceiling clamp to avoid guaranteed-perfect scores
+
 
 @dataclass
 class Question:
@@ -542,8 +552,8 @@ def analyze(
     for q in questions:
         base_dim_score = dim_estimates.get(q.dimension, 0.5)
         # Deterministic per-question variance (±0.08) to avoid identical scores
-        variance = (q.id * 7 % 17 - 8) / 100.0
-        q.score = max(0.05, min(0.95, base_dim_score + variance))
+        variance = (q.id * _VARIANCE_SPREAD_FACTOR % _VARIANCE_MODULUS - _VARIANCE_CENTER_OFFSET) / _VARIANCE_SCALE
+        q.score = max(_VARIANCE_MIN_SCORE, min(_VARIANCE_MAX_SCORE, base_dim_score + variance))
 
     overall = calculate_score(questions)
     dim_scores = calculate_dimension_scores(questions)

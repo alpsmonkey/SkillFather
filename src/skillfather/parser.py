@@ -83,21 +83,18 @@ def parse_skill(path: str | Path) -> SkillProfile:
 
 
 def _parse_frontmatter(content: str, profile: SkillProfile):
-    """Extract YAML frontmatter from SKILL.md using base.py's advanced parser.
+    """Extract YAML frontmatter from SKILL.md.
 
-    Delegates to _parse_yaml_frontmatter which supports:
+    Uses skillfather.yaml_utils which supports:
     - Simple key: value pairs
     - Inline lists [a, b, c]
     - Indented list items (- item)
     - Nested YAML (metadata.hermes.tags)
     - Multi-line scalars (>, |)
-
-    Import is deferred to avoid circular dependency:
-    parser.py -> platforms.base -> parser.py (SkillProfile)
     """
-    from skillfather.platforms.base import _parse_yaml_frontmatter
+    from skillfather.yaml_utils import parse_yaml_frontmatter
 
-    fm, _ = _parse_yaml_frontmatter(content)
+    fm, _ = parse_yaml_frontmatter(content)
     if not fm:
         return
 
