@@ -68,42 +68,42 @@ pip install -e .
 
 ```bash
 # List all supported platforms
-skillfit platforms
+skillfather platforms
 
 # Auto-detect platform and analyze
-skillfit analyze path/to/SKILL.md
+skillfather analyze path/to/SKILL.md
 
 # Specify a platform explicitly
-skillfit analyze path/to/command.md --platform claude-code
+skillfather analyze path/to/command.md --platform claude-code
 
 # Interactive Q&A mode (get a personalized score)
-skillfit analyze path/to/SKILL.md --interactive
+skillfather analyze path/to/SKILL.md --interactive
 
 # Output HTML report
-skillfit analyze path/to/SKILL.md --format html -o report.html
+skillfather analyze path/to/SKILL.md --format html -o report.html
 
 # Output Markdown report
-skillfit analyze path/to/SKILL.md --format markdown -o report.md
+skillfather analyze path/to/SKILL.md --format markdown -o report.md
 ```
 
 ### Platform-Specific Examples
 
 ```bash
 # WorkBuddy / CodeBuddy
-skillfit analyze ~/.workbuddy/skills/my-skill/SKILL.md
-skillfit analyze ~/.codebuddy/skills/pdf-editor/SKILL.md --platform codebuddy
+skillfather analyze ~/.workbuddy/skills/my-skill/SKILL.md
+skillfather analyze ~/.codebuddy/skills/pdf-editor/SKILL.md --platform codebuddy
 
 # OpenAI Codex Agent
-skillfit analyze .agents/skills/deploy/SKILL.md --platform codex
+skillfather analyze .agents/skills/deploy/SKILL.md --platform codex
 
 # Claude Code
-skillfit analyze .claude/commands/review.md --platform claude-code
+skillfather analyze .claude/commands/review.md --platform claude-code
 
 # Coze / 扣子
-skillfit analyze exported_skill.json --platform coze
+skillfather analyze exported_skill.json --platform coze
 
 # Hermes Agent
-skillfit analyze ~/.hermes/skills/research/SKILL.md --platform hermes
+skillfather analyze ~/.hermes/skills/research/SKILL.md --platform hermes
 ```
 
 ## Dual-Engine Architecture
@@ -117,13 +117,13 @@ skillfit analyze ~/.hermes/skills/research/SKILL.md --platform hermes
 
 ```bash
 # Set API key via environment variable
-export SKILLFIT_API_KEY=sk-xxx
-skillfit analyze SKILL.md --llm --interactive
+export SKILLFATHER_API_KEY=sk-xxx
+skillfather analyze SKILL.md --llm --interactive
 
 # Or use a custom API endpoint
-export SKILLFIT_API_BASE=https://api.deepseek.com/v1
-export SKILLFIT_MODEL=deepseek-chat
-skillfit analyze SKILL.md --llm --interactive
+export SKILLFATHER_API_BASE=https://api.deepseek.com/v1
+export SKILLFATHER_MODEL=deepseek-chat
+skillfather analyze SKILL.md --llm --interactive
 ```
 
 ## Output Formats
@@ -152,7 +152,7 @@ skillfit analyze SKILL.md --llm --interactive
 Generate a styled, responsive HTML report with visual score breakdowns:
 
 ```bash
-skillfit analyze SKILL.md --format html -o report.html
+skillfather analyze SKILL.md --format html -o report.html
 ```
 
 ### Markdown Report
@@ -160,7 +160,7 @@ skillfit analyze SKILL.md --format html -o report.html
 For note-taking or sharing:
 
 ```bash
-skillfit analyze SKILL.md --format markdown -o report.md
+skillfather analyze SKILL.md --format markdown -o report.md
 ```
 
 ## Configuration
@@ -169,14 +169,14 @@ skillfit analyze SKILL.md --format markdown -o report.md
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SKILLFIT_API_KEY` | LLM API Key | None (rule mode only) |
-| `SKILLFIT_API_BASE` | API Base URL | `https://api.openai.com/v1` |
-| `SKILLFIT_MODEL` | LLM model name | `gpt-4o-mini` |
-| `SKILLFIT_CONFIG` | Config file path | None |
+| `SKILLFATHER_API_KEY` | LLM API Key | None (rule mode only) |
+| `SKILLFATHER_API_BASE` | API Base URL | `https://api.openai.com/v1` |
+| `SKILLFATHER_MODEL` | LLM model name | `gpt-4o-mini` |
+| `SKILLFATHER_CONFIG` | Config file path | None |
 
 ### JSON Config (Optional)
 
-Create `skillfit.json` in your project root or specify via `SKILLFIT_CONFIG`:
+Create `skillfather.json` in your project root or specify via `SKILLFATHER_CONFIG`:
 
 ```json
 {
@@ -203,7 +203,7 @@ Create `skillfit.json` in your project root or specify via `SKILLFIT_CONFIG`:
 
 ```
 SkillFather/
-├── src/skillfit/
+├── src/skillfather/
 │   ├── __init__.py
 │   ├── __main__.py
 │   ├── cli.py              # CLI entry point (multi-platform)

@@ -7,10 +7,10 @@ Resources: scripts/, references/, assets/
 """
 
 from pathlib import Path
-from skillfit.platforms.base import (
+from skillfather.platforms.base import (
     PlatformAdapter, PlatformInfo, register_platform, _parse_yaml_frontmatter
 )
-from skillfit.parser import SkillProfile, _parse_content
+from skillfather.parser import SkillProfile, _parse_content
 
 
 @register_platform("workbuddy")
@@ -40,7 +40,7 @@ class WorkBuddyAdapter(PlatformAdapter):
         return False
 
     def parse(self, path: str | Path) -> SkillProfile:
-        from skillfit.parser import parse_skill
+        from skillfather.parser import parse_skill
         return parse_skill(path)
 
     def get_platform_context(self, profile: SkillProfile) -> str:

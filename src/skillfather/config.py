@@ -1,4 +1,4 @@
-"""Configuration management for SkillFit."""
+"""Configuration management for SkillFather."""
 
 import os
 import json

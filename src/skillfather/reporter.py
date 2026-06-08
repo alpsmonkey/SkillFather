@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 from datetime import datetime
-from skillfit.analyzer import AnalysisResult, DimensionScore
+from skillfather.analyzer import AnalysisResult, DimensionScore
 
 
 _TEMPLATE_DIR = Path(__file__).parent.parent.parent / "templates"
@@ -203,7 +203,7 @@ def _generate_inline_html(result: AnalysisResult) -> str:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{result.skill.display_name} - SkillFit Report</title>
+<title>{result.skill.display_name} - SkillFather Report</title>
 <style>
 body {{ font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }}
 .score {{ font-size: 4rem; font-weight: bold; color: #3B82F6; text-align: center; }}

@@ -2,7 +2,7 @@
 
 import pytest
 from pathlib import Path
-from skillfit.parser import parse_skill, SkillProfile
+from skillfather.parser import parse_skill, SkillProfile
 
 EXAMPLES_DIR = Path(__file__).parent.parent / "examples"
 SAMPLE_SKILL = EXAMPLES_DIR / "sample_skill.md"

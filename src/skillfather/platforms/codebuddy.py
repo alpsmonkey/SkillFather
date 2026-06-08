@@ -11,10 +11,10 @@ and the product branding.
 """
 
 from pathlib import Path
-from skillfit.platforms.base import (
+from skillfather.platforms.base import (
     PlatformAdapter, PlatformInfo, register_platform, _parse_yaml_frontmatter
 )
-from skillfit.parser import SkillProfile
+from skillfather.parser import SkillProfile
 
 
 @register_platform("codebuddy")
@@ -44,7 +44,7 @@ class CodeBuddyAdapter(PlatformAdapter):
 
     def parse(self, path: str | Path) -> SkillProfile:
         # Same format as WorkBuddy, reuse the parser
-        from skillfit.parser import parse_skill
+        from skillfather.parser import parse_skill
         profile = parse_skill(path)
         # Override platform tag
         profile.frontmatter_raw["_platform"] = "codebuddy"

@@ -15,10 +15,10 @@ Key differences from WorkBuddy:
 
 import json
 from pathlib import Path
-from skillfit.platforms.base import (
+from skillfather.platforms.base import (
     PlatformAdapter, PlatformInfo, register_platform, _parse_yaml_frontmatter
 )
-from skillfit.parser import SkillProfile
+from skillfather.parser import SkillProfile
 
 
 @register_platform("codex")
@@ -83,7 +83,7 @@ class CodexAdapter(PlatformAdapter):
             self._parse_agents_yaml(agents_yaml, profile)
 
         # Parse body content using shared utilities
-        from skillfit.parser import _parse_content
+        from skillfather.parser import _parse_content
         _parse_content(content, profile)
 
         if not profile.name:

@@ -1,10 +1,10 @@
-"""Command-line interface for SkillFit - Multi-Platform Agent Skill Analyzer."""
+"""Command-line interface for SkillFather - Multi-Platform Agent Skill Analyzer."""
 
 import argparse
 import sys
 from pathlib import Path
-from skillfit.parser import parse_skill
-from skillfit.analyzer import (
+from skillfather.parser import parse_skill
+from skillfather.analyzer import (
     analyze,
     generate_questions_rule_based,
     generate_questions_llm,
@@ -14,9 +14,9 @@ from skillfit.analyzer import (
     Question,
     AnalysisResult,
 )
-from skillfit.reporter import generate_html_report, generate_markdown_report
-from skillfit.config import get_llm_config, get_analysis_config
-from skillfit.platforms import (
+from skillfather.reporter import generate_html_report, generate_markdown_report
+from skillfather.config import get_llm_config, get_analysis_config
+from skillfather.platforms import (
     get_platform,
     list_platforms,
     detect_platform,
@@ -28,7 +28,7 @@ def _print_banner(platform: str = None):
     platform_tag = f" - {platform}" if platform else " - Multi-Platform"
     print()
     print("  ╔════════════════════════════════════════════════╗")
-    print(f"  ║  SkillFit{platform_tag:<32s}  ║")
+    print(f"  ║  SkillFather{platform_tag:<32s}  ║")
     print("  ║  Agent Skill 适配度分析工具 (v0.2.0)         ║")
     print("  ╚════════════════════════════════════════════════╝")
     print()
@@ -103,7 +103,7 @@ def cmd_analyze(args):
 def cmd_list_platforms(args):
     """List supported platforms."""
     print()
-    print("  SkillFit 支持的 Agent 平台")
+    print("  SkillFather 支持的 Agent 平台")
     print("  " + "=" * 50)
     print()
 
@@ -224,14 +224,14 @@ def _print_results(result: AnalysisResult, args):
     fmt = args.format or "console"
 
     if fmt in ("html", "all"):
-        out = args.output or f"skillfit_{Path(result.skill.path).stem}.html"
+        out = args.output or f"skillfather_{Path(result.skill.path).stem}.html"
         if not out.endswith(".html"):
             out = out + ".html"
         generate_html_report(result, out)
         print(f"  [OK] HTML 报告已保存: {out}")
 
     if fmt in ("markdown", "md", "all"):
-        base = args.output or f"skillfit_{Path(result.skill.path).stem}"
+        base = args.output or f"skillfather_{Path(result.skill.path).stem}"
         out_md = base.replace(".html", "")
         if not out_md.endswith(".md"):
             out_md = out_md + ".md"
@@ -244,8 +244,8 @@ def _print_results(result: AnalysisResult, args):
 def main(argv=None):
     """CLI entry point."""
     parser = argparse.ArgumentParser(
-        prog="skillfit",
-        description="SkillFit - Multi-Platform Agent Skill 适配度分析工具。支持 WorkBuddy、CodeBuddy、Codex、Claude Code、Coze、Hermes Agent。",
+        prog="skillfather",
+        description="SkillFather - Multi-Platform Agent Skill 适配度分析工具。支持 WorkBuddy、CodeBuddy、Codex、Claude Code、Coze、Hermes Agent。",
     )
 
     subparsers = parser.add_subparsers(dest="command", help="可用命令")
@@ -282,7 +282,7 @@ def main(argv=None):
     subparsers.add_parser("platforms", help="列出所有支持的平台")
 
     # version
-    parser.add_argument("-v", "--version", action="version", version="skillfit 0.2.0")
+    parser.add_argument("-v", "--version", action="version", version="skillfather 0.2.0")
 
     args = parser.parse_args(argv)
 

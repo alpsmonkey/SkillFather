@@ -1,5 +1,5 @@
 """
-SkillFit - Multi-Platform Agent Skill 适配度分析工具
+SkillFather - Multi-Platform Agent Skill 适配度分析工具
 
 在安装或使用一个 Agent Skill 之前，从使用角度分析其适配度。
 仅做适用性评审，不涉及安全性审计。

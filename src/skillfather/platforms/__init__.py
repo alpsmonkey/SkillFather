@@ -1,4 +1,4 @@
-"""Multi-platform adapter registry for SkillFit.
+"""Multi-platform adapter registry for SkillFather.
 
 Supports parsing skills from different Agent platforms:
 - WorkBuddy (SKILL.md with YAML frontmatter)
@@ -9,13 +9,13 @@ Supports parsing skills from different Agent platforms:
 - Hermes Agent (SKILL.md with Hermes-specific frontmatter)
 """
 
-from skillfit.platforms.base import PlatformAdapter, PlatformInfo, register_platform
-from skillfit.platforms.workbuddy import WorkBuddyAdapter
-from skillfit.platforms.codebuddy import CodeBuddyAdapter
-from skillfit.platforms.codex import CodexAdapter
-from skillfit.platforms.claude_code import ClaudeCodeAdapter
-from skillfit.platforms.coze import CozeAdapter
-from skillfit.platforms.hermes import HermesAdapter
+from skillfather.platforms.base import PlatformAdapter, PlatformInfo, register_platform
+from skillfather.platforms.workbuddy import WorkBuddyAdapter
+from skillfather.platforms.codebuddy import CodeBuddyAdapter
+from skillfather.platforms.codex import CodexAdapter
+from skillfather.platforms.claude_code import ClaudeCodeAdapter
+from skillfather.platforms.coze import CozeAdapter
+from skillfather.platforms.hermes import HermesAdapter
 
 # All supported platforms
 PLATFORMS = {
@@ -130,7 +130,7 @@ def parse_skill_file(path: str, platform: str | None = None) -> "SkillProfile":
     Returns:
         SkillProfile with extracted information.
     """
-    from skillfit.parser import SkillProfile
+    from skillfather.parser import SkillProfile
 
     if platform:
         adapter = get_platform(platform)

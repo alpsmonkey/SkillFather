@@ -22,10 +22,10 @@ Key differences from WorkBuddy:
 
 import re
 from pathlib import Path
-from skillfit.platforms.base import (
+from skillfather.platforms.base import (
     PlatformAdapter, PlatformInfo, register_platform, _parse_yaml_frontmatter
 )
-from skillfit.parser import SkillProfile
+from skillfather.parser import SkillProfile
 
 
 @register_platform("hermes")
@@ -90,7 +90,7 @@ class HermesAdapter(PlatformAdapter):
         self._extract_hermes_metadata(fm, profile)
 
         # Parse body content using shared parser
-        from skillfit.parser import _parse_content
+        from skillfather.parser import _parse_content
         _parse_content(content, profile)
 
         if not profile.name:

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional
 import re
 
-from skillfit.parser import SkillProfile
+from skillfather.parser import SkillProfile
 
 
 @dataclass

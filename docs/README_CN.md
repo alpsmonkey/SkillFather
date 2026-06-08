@@ -68,42 +68,42 @@ pip install -e .
 
 ```bash
 # 列出所有支持的平台
-skillfit platforms
+skillfather platforms
 
 # 自动检测平台并分析
-skillfit analyze path/to/SKILL.md
+skillfather analyze path/to/SKILL.md
 
 # 指定平台
-skillfit analyze path/to/command.md --platform claude-code
+skillfather analyze path/to/command.md --platform claude-code
 
 # 交互式问答模式（获取个性化评分）
-skillfit analyze path/to/SKILL.md --interactive
+skillfather analyze path/to/SKILL.md --interactive
 
 # 输出 HTML 报告
-skillfit analyze path/to/SKILL.md --format html -o report.html
+skillfather analyze path/to/SKILL.md --format html -o report.html
 
 # 输出 Markdown 报告
-skillfit analyze path/to/SKILL.md --format markdown -o report.md
+skillfather analyze path/to/SKILL.md --format markdown -o report.md
 ```
 
 ### 各平台使用示例
 
 ```bash
 # WorkBuddy / CodeBuddy
-skillfit analyze ~/.workbuddy/skills/my-skill/SKILL.md
-skillfit analyze ~/.codebuddy/skills/pdf-editor/SKILL.md --platform codebuddy
+skillfather analyze ~/.workbuddy/skills/my-skill/SKILL.md
+skillfather analyze ~/.codebuddy/skills/pdf-editor/SKILL.md --platform codebuddy
 
 # OpenAI Codex Agent
-skillfit analyze .agents/skills/deploy/SKILL.md --platform codex
+skillfather analyze .agents/skills/deploy/SKILL.md --platform codex
 
 # Claude Code
-skillfit analyze .claude/commands/review.md --platform claude-code
+skillfather analyze .claude/commands/review.md --platform claude-code
 
 # Coze / 扣子
-skillfit analyze exported_skill.json --platform coze
+skillfather analyze exported_skill.json --platform coze
 
 # Hermes Agent
-skillfit analyze ~/.hermes/skills/research/SKILL.md --platform hermes
+skillfather analyze ~/.hermes/skills/research/SKILL.md --platform hermes
 ```
 
 ## 双模式引擎
@@ -117,13 +117,13 @@ skillfit analyze ~/.hermes/skills/research/SKILL.md --platform hermes
 
 ```bash
 # 通过环境变量设置 API Key
-export SKILLFIT_API_KEY=sk-xxx
-skillfit analyze SKILL.md --llm --interactive
+export SKILLFATHER_API_KEY=sk-xxx
+skillfather analyze SKILL.md --llm --interactive
 
 # 或使用自定义 API 端点
-export SKILLFIT_API_BASE=https://api.deepseek.com/v1
-export SKILLFIT_MODEL=deepseek-chat
-skillfit analyze SKILL.md --llm --interactive
+export SKILLFATHER_API_BASE=https://api.deepseek.com/v1
+export SKILLFATHER_MODEL=deepseek-chat
+skillfather analyze SKILL.md --llm --interactive
 ```
 
 ## 输出格式
@@ -152,7 +152,7 @@ skillfit analyze SKILL.md --llm --interactive
 生成带可视化评分的响应式 HTML 报告：
 
 ```bash
-skillfit analyze SKILL.md --format html -o report.html
+skillfather analyze SKILL.md --format html -o report.html
 ```
 
 ### Markdown 报告
@@ -160,7 +160,7 @@ skillfit analyze SKILL.md --format html -o report.html
 适合笔记或分享：
 
 ```bash
-skillfit analyze SKILL.md --format markdown -o report.md
+skillfather analyze SKILL.md --format markdown -o report.md
 ```
 
 ## 配置
@@ -169,14 +169,14 @@ skillfit analyze SKILL.md --format markdown -o report.md
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
-| `SKILLFIT_API_KEY` | LLM API Key | 无（仅规则模式） |
-| `SKILLFIT_API_BASE` | API Base URL | `https://api.openai.com/v1` |
-| `SKILLFIT_MODEL` | LLM 模型名 | `gpt-4o-mini` |
-| `SKILLFIT_CONFIG` | 配置文件路径 | 无 |
+| `SKILLFATHER_API_KEY` | LLM API Key | 无（仅规则模式） |
+| `SKILLFATHER_API_BASE` | API Base URL | `https://api.openai.com/v1` |
+| `SKILLFATHER_MODEL` | LLM 模型名 | `gpt-4o-mini` |
+| `SKILLFATHER_CONFIG` | 配置文件路径 | 无 |
 
 ### JSON 配置文件（可选）
 
-在项目根目录创建 `skillfit.json` 或通过 `SKILLFIT_CONFIG` 指定：
+在项目根目录创建 `skillfather.json` 或通过 `SKILLFATHER_CONFIG` 指定：
 
 ```json
 {
@@ -203,7 +203,7 @@ skillfit analyze SKILL.md --format markdown -o report.md
 
 ```
 SkillFather/
-├── src/skillfit/
+├── src/skillfather/
 │   ├── __init__.py
 │   ├── __main__.py
 │   ├── cli.py              # CLI 入口（多平台支持）

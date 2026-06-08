@@ -22,10 +22,10 @@ import json
 import re
 import zipfile
 from pathlib import Path
-from skillfit.platforms.base import (
+from skillfather.platforms.base import (
     PlatformAdapter, PlatformInfo, register_platform
 )
-from skillfit.parser import SkillProfile
+from skillfather.parser import SkillProfile
 
 
 @register_platform("coze")

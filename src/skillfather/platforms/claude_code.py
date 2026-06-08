@@ -17,10 +17,10 @@ Key differences from WorkBuddy:
 
 import re
 from pathlib import Path
-from skillfit.platforms.base import (
+from skillfather.platforms.base import (
     PlatformAdapter, PlatformInfo, register_platform, _parse_yaml_frontmatter
 )
-from skillfit.parser import SkillProfile
+from skillfather.parser import SkillProfile
 
 
 @register_platform("claude-code")

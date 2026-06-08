@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.backends._legacy:_Backend"
 
 [project]
-name = "skillfit"
+name = "skillfather"
 version = "0.2.0"
 description = "Multi-Platform Agent Skill 适配度分析工具 - 支持 WorkBuddy/Codex/Claude Code/Coze/CodeBuddy/Hermes Agent（仅适用性评审，不涉及安全性审计）"
 readme = "README.md"
@@ -28,7 +28,7 @@ classifiers = [
 dev = ["pytest>=7.0", "ruff>=0.1.0"]
 
 [project.scripts]
-skillfit = "skillfit.cli:main"
+skillfather = "skillfather.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

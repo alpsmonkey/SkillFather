@@ -5,8 +5,8 @@ import urllib.request
 import urllib.error
 from dataclasses import dataclass, field
 from typing import Optional
-from skillfit.parser import parse_skill, SkillProfile
-from skillfit.config import LLMConfig, AnalysisConfig
+from skillfather.parser import parse_skill, SkillProfile
+from skillfather.config import LLMConfig, AnalysisConfig
 
 
 @dataclass
