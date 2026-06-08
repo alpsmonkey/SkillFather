@@ -9,5 +9,6 @@ build/
 *.md
 !README.md
 !docs/README_CN.md
+!SKILL.md
 !LICENSE
 !templates/report.html
