@@ -8,5 +8,6 @@ build/
 *.html
 *.md
 !README.md
+!docs/README_CN.md
 !LICENSE
 !templates/report.html
