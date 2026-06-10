@@ -1,8 +1,6 @@
 """Core analysis engine - generates questions and calculates adaptability scores."""
 
 import json
-import urllib.request
-import urllib.error
 from dataclasses import dataclass, field
 from typing import Optional
 from skillfather.parser import parse_skill, SkillProfile
@@ -42,7 +40,7 @@ class DimensionScore:
     key: str
     label: str
     score: float  # 0.0 - 1.0
-    questions: list = field(default_factory=list)
+    questions: list[Question] = field(default_factory=list)
 
 
 @dataclass
@@ -50,8 +48,8 @@ class AnalysisResult:
     """Complete analysis result."""
 
     skill: SkillProfile
-    questions: list = field(default_factory=list)
-    dimension_scores: list = field(default_factory=list)
+    questions: list[Question] = field(default_factory=list)
+    dimension_scores: list[DimensionScore] = field(default_factory=list)
     overall_score: float = 0.0  # 0.0 - 10.0
     recommendation: str = ""
     details: str = ""
@@ -323,40 +321,9 @@ def generate_questions_llm(profile: SkillProfile, config: LLMConfig, num_questio
 
 
 def _call_llm(system_prompt: str, user_prompt: str, config: LLMConfig) -> str:
-    """Call OpenAI-compatible chat completion API."""
-    import ssl
-
-    url = f"{config.base_url.rstrip('/')}/chat/completions"
-    payload = json.dumps({
-        "model": config.model,
-        "temperature": config.temperature,
-        "max_tokens": config.max_tokens,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-    }).encode("utf-8")
-
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {config.api_key}",
-    }
-
-    req = urllib.request.Request(url, data=payload, headers=headers, method="POST")
-
-    # Handle SSL for self-signed certs (common in corporate environments)
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-
-    try:
-        with urllib.request.urlopen(req, context=ctx, timeout=60) as resp:
-            result = json.loads(resp.read().decode("utf-8"))
-            return result["choices"][0]["message"]["content"].strip()
-    except urllib.error.URLError as e:
-        raise RuntimeError(f"LLM API call failed: {e}") from e
-    except (KeyError, IndexError) as e:
-        raise RuntimeError(f"Unexpected LLM response format: {e}") from e
+    """Delegate LLM API call to llm_client module."""
+    from skillfather.llm_client import call_llm
+    return call_llm(system_prompt, user_prompt, config)
 
 
 def calculate_score(questions: list[Question]) -> float:

@@ -56,8 +56,8 @@ def cmd_analyze(args):
     """Analyze a skill file."""
     skill_path = args.skill_path
     if not Path(skill_path).exists():
-        print(f"[ERROR] File not found: {skill_path}")
-        return 1
+        print(f"[ERROR] File not found: {skill_path}", file=sys.stderr)
+        sys.exit(1)
 
     llm_config = get_llm_config(args.config)
     analysis_config = get_analysis_config(args.config)
@@ -178,7 +178,7 @@ def _run_interactive(profile, use_llm, llm_config, num_q, args):
         details="交互模式：基于你的实际回答计算评分。",
     )
 
-    _print_results(result, args)
+    return _print_results(result, args)
 
 
 def _run_batch(profile, use_llm, llm_config, num_q, args):
@@ -192,7 +192,7 @@ def _run_batch(profile, use_llm, llm_config, num_q, args):
         num_questions=num_q,
     )
 
-    _print_results(result, args)
+    return _print_results(result, args)
 
 
 def _print_results(result: AnalysisResult, args):

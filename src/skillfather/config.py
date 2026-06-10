@@ -1,5 +1,6 @@
 """Configuration management for SkillFather."""
 
+import functools
 import os
 import json
 from pathlib import Path
@@ -21,7 +22,7 @@ class LLMConfig:
 class AnalysisConfig:
     """Analysis configuration."""
     num_questions: int = 8
-    score_weights: dict = field(default_factory=lambda: {
+    score_weights: dict[str, float] = field(default_factory=lambda: {
         "use_case": 0.25,       # 用例契合度
         "environment": 0.20,    # 环境就绪度
         "prerequisites": 0.20,  # 前置条件
@@ -30,12 +31,26 @@ class AnalysisConfig:
     })
 
 
-def load_config(config_path: str | Path | None = None) -> dict:
-    """Load configuration from file or environment variables.
+# All environment variable mappings in one place — eliminates duplicate reads
+_ENV_MAPPING = {
+    "SKILLFATHER_API_KEY": ("llm", "api_key"),
+    "SKILLFATHER_BASE_URL": ("llm", "base_url"),
+    "SKILLFATHER_MODEL": ("llm", "model"),
+    "SKILLFATHER_NUM_QUESTIONS": ("analysis", "num_questions"),
+    "OPENAI_API_KEY": ("llm", "api_key"),  # fallback key alias
+}
 
-    Priority: config file > environment variables > defaults
+
+@functools.lru_cache(maxsize=8)
+def load_config(config_path: str | None = None) -> dict:
+    """Load configuration from file and environment variables (cached).
+
+    Priority: environment variables > config file > defaults.
+    All env-var reads happen here — callers should not read os.environ directly.
+
+    Results are cached by config_path string. Call clear_config_cache() to reset.
     """
-    cfg = {}
+    cfg: dict = {}
 
     # Load from config file if provided
     if config_path:
@@ -43,15 +58,8 @@ def load_config(config_path: str | Path | None = None) -> dict:
         if p.exists():
             cfg = json.loads(p.read_text(encoding="utf-8"))
 
-    # Environment variables override
-    env_mapping = {
-        "SKILLFATHER_API_KEY": ("llm", "api_key"),
-        "SKILLFATHER_BASE_URL": ("llm", "base_url"),
-        "SKILLFATHER_MODEL": ("llm", "model"),
-        "SKILLFATHER_NUM_QUESTIONS": ("analysis", "num_questions"),
-    }
-
-    for env_key, (section, key) in env_mapping.items():
+    # Environment variables override config file values (unified in one pass)
+    for env_key, (section, key) in _ENV_MAPPING.items():
         value = os.environ.get(env_key)
         if value is not None:
             cfg.setdefault(section, {})[key] = value
@@ -59,33 +67,31 @@ def load_config(config_path: str | Path | None = None) -> dict:
     return cfg
 
 
+def clear_config_cache() -> None:
+    """Clear the load_config LRU cache (useful after env-var changes at runtime)."""
+    load_config.cache_clear()
+
+
 def get_llm_config(config_path: str | Path | None = None) -> LLMConfig:
-    """Build LLMConfig from config file and environment."""
-    cfg = load_config(config_path)
+    """Build LLMConfig from unified config (no duplicate env-var reads)."""
+    cfg = load_config(str(config_path) if config_path else None)
     llm_cfg = cfg.get("llm", {})
 
-    api_key = (
-        os.environ.get("SKILLFATHER_API_KEY")
-        or os.environ.get("OPENAI_API_KEY")
-        or llm_cfg.get("api_key", "")
-    )
+    api_key = llm_cfg.get("api_key", "")
 
     return LLMConfig(
         api_key=api_key,
-        base_url=os.environ.get("SKILLFATHER_BASE_URL") or llm_cfg.get("base_url", "https://api.openai.com/v1"),
-        model=os.environ.get("SKILLFATHER_MODEL") or llm_cfg.get("model", "gpt-4o-mini"),
+        base_url=llm_cfg.get("base_url", "https://api.openai.com/v1"),
+        model=llm_cfg.get("model", "gpt-4o-mini"),
         enabled=bool(api_key),
     )
 
 
 def get_analysis_config(config_path: str | Path | None = None) -> AnalysisConfig:
-    """Build AnalysisConfig from config file and environment."""
-    cfg = load_config(config_path)
+    """Build AnalysisConfig from unified config (no duplicate env-var reads)."""
+    cfg = load_config(str(config_path) if config_path else None)
     analysis_cfg = cfg.get("analysis", {})
 
     return AnalysisConfig(
-        num_questions=int(
-            os.environ.get("SKILLFATHER_NUM_QUESTIONS")
-            or analysis_cfg.get("num_questions", 8)
-        ),
+        num_questions=int(analysis_cfg.get("num_questions", 8)),
     )

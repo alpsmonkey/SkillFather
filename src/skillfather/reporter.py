@@ -1,12 +1,28 @@
 """Report generation - produces HTML and Markdown analysis reports."""
 
 import json
+import html as html_module
 from pathlib import Path
 from datetime import datetime
 from skillfather.analyzer import AnalysisResult, DimensionScore
 
 
-_TEMPLATE_DIR = Path(__file__).parent.parent.parent / "templates"
+def _get_template_dir() -> Path:
+    """Resolve templates directory using importlib.resources (pip-install safe)."""
+    try:
+        import importlib.resources as pkg_resources
+        # Python 3.10+: as_file + files
+        ref = pkg_resources.files("skillfather").joinpath("../templates")
+        # Resolve to a real path for Path-based operations
+        with pkg_resources.as_file(ref) as p:
+            return p
+    except (ImportError, TypeError, FileNotFoundError):
+        pass
+    # Fallback: relative path for editable / source installs
+    return Path(__file__).parent.parent.parent / "templates"
+
+
+_TEMPLATE_DIR = _get_template_dir()
 
 
 def generate_html_report(result: AnalysisResult, output_path: str | Path | None = None) -> str:
@@ -136,6 +152,13 @@ _DIM_LABELS = {
 }
 
 
+def _escape_html(text: str) -> str:
+    """Escape user-provided text for safe HTML insertion."""
+    if not text:
+        return ""
+    return html_module.escape(str(text), quote=True)
+
+
 def _render_template(template: str, result: AnalysisResult) -> str:
     """Render HTML template with analysis data."""
     # Build dimension data
@@ -183,14 +206,15 @@ def _render_template(template: str, result: AnalysisResult) -> str:
     score_color = _get_score_color(result.overall_score)
     score = result.overall_score
 
-    html = template.replace("{{SCHEDULED_TIME}}", datetime.now().strftime("%Y-%m-%d %H:%M"))
-    html = html.replace("{{SKILL_NAME}}", skill.display_name)
-    html = html.replace("{{SKILL_PATH}}", skill.path)
+    # Escape user-provided strings before HTML insertion
+    html = template.replace("{{SCHEDULED_TIME}}", _escape_html(datetime.now().strftime("%Y-%m-%d %H:%M")))
+    html = html.replace("{{SKILL_NAME}}", _escape_html(skill.display_name))
+    html = html.replace("{{SKILL_PATH}}", _escape_html(skill.path))
     html = html.replace("{{OVERALL_SCORE}}", f"{score:.1f}")
     html = html.replace("{{SCORE_COLOR}}", score_color)
     html = html.replace("{{SCORE_FILL_PCT}}", f"{score * 10:.0f}")
-    html = html.replace("{{RECOMMENDATION}}", result.recommendation)
-    html = html.replace("{{DETAILS}}", result.details)
+    html = html.replace("{{RECOMMENDATION}}", _escape_html(result.recommendation))
+    html = html.replace("{{DETAILS}}", _escape_html(result.details))
     html = html.replace("{{DIMENSION_DATA}}", json.dumps(dim_data, ensure_ascii=False))
     html = html.replace("{{QUESTIONS_DATA}}", questions_json)
     html = html.replace("{{SKILL_META}}", skill_meta)
@@ -206,16 +230,18 @@ def _generate_inline_html(result: AnalysisResult) -> str:
         dim_color = _get_dim_color(q.dimension)
         question_cards += (
             f'<div class="question" style="border-left-color:{dim_color}">'
-            f'<h3>Q{q.id}. {q.text}</h3>'
-            f"<p><em>{_DIM_LABELS.get(q.dimension, q.dimension_label)}</em> | {q.explanation}</p>"
+            f'<h3>Q{_escape_html(str(q.id))}. {_escape_html(q.text)}</h3>'
+            f"<p><em>{_escape_html(_DIM_LABELS.get(q.dimension, q.dimension_label))}</em> | {_escape_html(q.explanation)}</p>"
             f"</div>\n"
         )
+    safe_name = _escape_html(result.skill.display_name)
+    safe_rec = _escape_html(result.recommendation)
     return f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{result.skill.display_name} - SkillFather Report</title>
+<title>{safe_name} - SkillFather Report</title>
 <style>
 body {{ font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }}
 .score {{ font-size: 4rem; font-weight: bold; color: {score_color}; text-align: center; }}
@@ -223,9 +249,9 @@ body {{ font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 8
 </style>
 </head>
 <body>
-<h1>{result.skill.display_name} - 适配度分析</h1>
+<h1>{safe_name} - 适配度分析</h1>
 <div class="score">{result.overall_score:.1f}/10</div>
-<p>{result.recommendation}</p>
+<p>{safe_rec}</p>
 {question_cards}
 </body>
 </html>"""

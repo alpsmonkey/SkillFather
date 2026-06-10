@@ -17,18 +17,18 @@ class SkillProfile:
     name: str = ""
     summary: str = ""
     title: str = ""
-    read_when: list = field(default_factory=list)
-    frontmatter_raw: dict = field(default_factory=dict)
+    read_when: list[str] = field(default_factory=list)
+    frontmatter_raw: dict[str, object] = field(default_factory=dict)
 
     # Content sections
     description: str = ""
-    triggers: list = field(default_factory=list)
-    capabilities: list = field(default_factory=list)
-    requirements: list = field(default_factory=list)
+    triggers: list[str] = field(default_factory=list)
+    capabilities: list[str] = field(default_factory=list)
+    requirements: list[str] = field(default_factory=list)
     instructions: str = ""
-    tools_required: list = field(default_factory=list)
-    dependencies: list = field(default_factory=list)
-    all_sections: dict = field(default_factory=dict)
+    tools_required: list[str] = field(default_factory=list)
+    dependencies: list[str] = field(default_factory=list)
+    all_sections: dict[str, str] = field(default_factory=dict)
 
     @property
     def display_name(self) -> str:
@@ -127,20 +127,17 @@ def _parse_content(content: str, profile: SkillProfile):
     # Remove frontmatter
     body = re.sub(r"^---\s*\n.*?\n---\s*\n", "", content, count=1, flags=re.DOTALL)
 
-    # Split into sections by headers
-    sections = re.split(r"^(#{1,4}\s+.+)$", body, flags=re.MULTILINE)
+    # Build sections map once and pass to all extractors
+    sections = _build_sections_map(body)
 
-    for i in range(1, len(sections), 2):
-        header = sections[i].strip()
-        content_text = sections[i + 1].strip() if i + 1 < len(sections) else ""
+    # Split into sections by headers — also populate all_sections
+    for key, val in sections.items():
+        profile.all_sections[key] = val
 
-        header_clean = re.sub(r"^#+\s*", "", header).strip()
-        profile.all_sections[header_clean] = content_text
-
-    # Extract specific dimensions
-    _extract_triggers(body, profile)
-    _extract_requirements(body, profile)
-    _extract_capabilities(body, profile)
+    # Extract specific dimensions — pass pre-built sections map
+    _extract_triggers(body, profile, sections)
+    _extract_requirements(body, profile, sections)
+    _extract_capabilities(body, profile, sections)
 
     # Set full instructions
     profile.instructions = body
@@ -159,7 +156,18 @@ def _parse_content(content: str, profile: SkillProfile):
                 break
 
 
-def _extract_triggers(body: str, profile: SkillProfile):
+def _build_sections_map(body: str) -> dict[str, str]:
+    """Parse body into a {header: content} dict. Built once, reused by all extractors."""
+    sections: dict[str, str] = {}
+    parts = re.split(r"^(#{1,4}\s+.+)$", body, flags=re.MULTILINE)
+    for i in range(1, len(parts), 2):
+        header = re.sub(r"^#+\s*", "", parts[i].strip())
+        content = parts[i + 1].strip() if i + 1 < len(parts) else ""
+        sections[header] = content
+    return sections
+
+
+def _extract_triggers(body: str, profile: SkillProfile, sections: dict[str, str] | None = None):
     """Extract trigger phrases from the skill content.
 
     Handles multiple common formats:
@@ -170,7 +178,7 @@ def _extract_triggers(body: str, profile: SkillProfile):
     - Frontmatter summary containing trigger keywords
     """
     # Pattern 1: ## 触发条件 section with list items
-    trigger_section = _get_section_text(body, ["触发条件", "触发词", "Triggers", "触发场景"])
+    trigger_section = _get_section_text(body, ["触发条件", "触发词", "Triggers", "触发场景"], sections)
 
     if trigger_section:
         # Extract list items (- xxx)
@@ -209,9 +217,9 @@ def _extract_triggers(body: str, profile: SkillProfile):
     _deduplicate(profile.triggers, min_len=2)
 
 
-def _extract_requirements(body: str, profile: SkillProfile):
+def _extract_requirements(body: str, profile: SkillProfile, sections: dict[str, str] | None = None):
     """Extract requirements and prerequisites from the skill content."""
-    req_section = _get_section_text(body, ["前置条件", "前提条件", "Prerequisites", "Requirements"])
+    req_section = _get_section_text(body, ["前置条件", "前提条件", "Prerequisites", "Requirements"], sections)
 
     if req_section:
         list_items = re.findall(r"[-•]\s*(.+)", req_section)
@@ -231,7 +239,7 @@ def _extract_requirements(body: str, profile: SkillProfile):
     _extract_mcp_tools(body, profile)
 
     # Extract explicit tool/dependency references
-    _extract_dependencies(body, profile)
+    _extract_dependencies(body, profile, sections)
 
     _deduplicate(profile.requirements, min_len=2)
     _deduplicate(profile.tools_required, min_len=2)
@@ -252,9 +260,9 @@ def _extract_mcp_tools(body: str, profile: SkillProfile):
             profile.tools_required.append(tool)
 
 
-def _extract_dependencies(body: str, profile: SkillProfile):
+def _extract_dependencies(body: str, profile: SkillProfile, sections: dict[str, str] | None = None):
     """Extract explicit dependency references."""
-    dep_section = _get_section_text(body, ["依赖", "Dependencies", "工具依赖", "知识库配置"])
+    dep_section = _get_section_text(body, ["依赖", "Dependencies", "工具依赖", "知识库配置"], sections)
 
     if dep_section:
         # Extract list items (- xxx) from the section
@@ -274,9 +282,9 @@ def _extract_dependencies(body: str, profile: SkillProfile):
                     profile.tools_required.append(t)
 
 
-def _extract_capabilities(body: str, profile: SkillProfile):
+def _extract_capabilities(body: str, profile: SkillProfile, sections: dict[str, str] | None = None):
     """Extract capabilities and features from the skill content."""
-    cap_section = _get_section_text(body, ["功能", "能力", "Features", "Capabilities", "支持场景"])
+    cap_section = _get_section_text(body, ["功能", "能力", "Features", "Capabilities", "支持场景"], sections)
 
     if cap_section:
         list_items = re.findall(r"[-•]\s*(.+)", cap_section)
@@ -296,7 +304,7 @@ def _extract_capabilities(body: str, profile: SkillProfile):
 
     # If still no capabilities, extract from the "概述" section
     if not profile.capabilities:
-        overview = _get_section_text(body, ["概述", "Overview", "简介", "描述"])
+        overview = _get_section_text(body, ["概述", "Overview", "简介", "描述"], sections)
         if overview:
             # Extract the first meaningful sentences
             sentences = re.split(r"[。\n]", overview)
@@ -310,15 +318,21 @@ def _extract_capabilities(body: str, profile: SkillProfile):
     _deduplicate(profile.capabilities, min_len=3)
 
 
-def _get_section_text(body: str, section_names: list[str]) -> str:
-    """Get the text content of a section by trying multiple possible section names."""
-    # Build sections map from body
-    sections = {}
-    parts = re.split(r"^(#{1,4}\s+.+)$", body, flags=re.MULTILINE)
-    for i in range(1, len(parts), 2):
-        header = re.sub(r"^#+\s*", "", parts[i].strip())
-        content = parts[i + 1].strip() if i + 1 < len(parts) else ""
-        sections[header] = content
+def _get_section_text(body: str, section_names: list[str], sections: dict[str, str] | None = None) -> str:
+    """Get the text content of a section by trying multiple possible section names.
+
+    Args:
+        body: Full body text (used only if sections is None).
+        section_names: Candidate section header names to search for.
+        sections: Pre-built sections map. If None, will be built from body on each call.
+    """
+    if sections is None:
+        sections = {}
+        parts = re.split(r"^(#{1,4}\s+.+)$", body, flags=re.MULTILINE)
+        for i in range(1, len(parts), 2):
+            header = re.sub(r"^#+\s*", "", parts[i].strip())
+            content = parts[i + 1].strip() if i + 1 < len(parts) else ""
+            sections[header] = content
 
     for name in section_names:
         for key, val in sections.items():
