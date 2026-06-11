@@ -33,7 +33,6 @@ class TestParseSkill:
     def test_frontmatter_extraction(self):
         profile = parse_skill(SAMPLE_SKILL)
         assert "SAP 成本分析" in profile.name
-        # BUG: sample_skill.md summary is "SAP 成本分析技能示例", not "IMA 知识库"
         assert "SAP 成本分析" in profile.summary
 
     def test_read_when(self):
@@ -196,7 +195,7 @@ platforms: [macos, linux, windows]
             os.unlink(path)
 
     def test_name_vs_title_priority(self):
-        """Both 'name' and 'title' present — 'title' should NOT override 'name'."""
+        """Both 'name' and 'title' present — 'title' takes priority per parser logic (title OR name)."""
         path = _write_tmp("""---
 title: Title Value
 name: Name Value

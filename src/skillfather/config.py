@@ -34,7 +34,7 @@ class AnalysisConfig:
 # All environment variable mappings in one place — eliminates duplicate reads
 _ENV_MAPPING = {
     "SKILLFATHER_API_KEY": ("llm", "api_key"),
-    "SKILLFATHER_BASE_URL": ("llm", "base_url"),
+    "SKILLFATHER_API_BASE": ("llm", "base_url"),
     "SKILLFATHER_MODEL": ("llm", "model"),
     "SKILLFATHER_NUM_QUESTIONS": ("analysis", "num_questions"),
     "OPENAI_API_KEY": ("llm", "api_key"),  # fallback key alias
@@ -104,6 +104,13 @@ def get_analysis_config(config_path: str | Path | None = None) -> AnalysisConfig
     cfg = load_config(str(config_path) if config_path else None)
     analysis_cfg = cfg.get("analysis", {})
 
-    return AnalysisConfig(
+    result = AnalysisConfig(
         num_questions=_safe_int(analysis_cfg.get("num_questions"), default=8),
     )
+
+    # Merge custom score weights if provided
+    weights = analysis_cfg.get("score_weights")
+    if weights and isinstance(weights, dict):
+        result.score_weights = {**result.score_weights, **weights}
+
+    return result

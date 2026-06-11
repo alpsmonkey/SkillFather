@@ -1,5 +1,6 @@
 """Core analysis engine - generates questions and calculates adaptability scores."""
 
+import hashlib
 import json
 from dataclasses import dataclass, field
 from typing import Optional
@@ -516,10 +517,12 @@ def analyze(
     dim_estimates = _estimate_dimension_scores(profile)
 
     # Map question scores from dimension estimates
-    for q in questions:
+    # Use stable content-based hash as variance seed so that the same SKILL.md
+    # always produces the same scores regardless of question-id assignment order.
+    content_seed = int(hashlib.md5(profile.raw_content.encode("utf-8", errors="ignore")).hexdigest(), 16)
+    for idx, q in enumerate(questions):
         base_dim_score = dim_estimates.get(q.dimension, 0.5)
-        # Deterministic per-question variance (±0.08) to avoid identical scores
-        variance = (q.id * _VARIANCE_SPREAD_FACTOR % _VARIANCE_MODULUS - _VARIANCE_CENTER_OFFSET) / _VARIANCE_SCALE
+        variance = ((content_seed + idx + 1) * _VARIANCE_SPREAD_FACTOR % _VARIANCE_MODULUS - _VARIANCE_CENTER_OFFSET) / _VARIANCE_SCALE
         q.score = max(_VARIANCE_MIN_SCORE, min(_VARIANCE_MAX_SCORE, base_dim_score + variance))
 
     overall = calculate_score(questions)

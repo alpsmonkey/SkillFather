@@ -62,6 +62,9 @@ SKILL.md → Parse → Generate 6-10 Diagnostic Questions → 5-Dimension Score 
 git clone https://github.com/alpsmonkey/SkillFather.git
 cd SkillFather
 pip install -e .
+
+# Or with dev dependencies (pytest, ruff) for contributing
+pip install -e ".[dev]"
 ```
 
 ### Basic Usage
