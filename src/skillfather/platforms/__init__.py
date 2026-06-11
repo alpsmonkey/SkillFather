@@ -70,8 +70,8 @@ def _is_hermes_skill(content: str) -> bool:
     Returns False on any parse error (conservative default).
     """
     try:
-        from skillfather.platforms.base import _parse_yaml_frontmatter
-        fm, _body = _parse_yaml_frontmatter(content)
+        from skillfather.yaml_utils import parse_yaml_frontmatter
+        fm, _body = parse_yaml_frontmatter(content)
         meta = fm.get("metadata", {})
         return isinstance(meta, dict) and isinstance(meta.get("hermes"), dict)
     except Exception:

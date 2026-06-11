@@ -55,10 +55,10 @@ class TestParseScoreInput:
 class TestCLIArgParsing:
     """Test CLI argument parsing and command routing."""
 
-    def test_no_command_returns_0(self):
-        """No subcommand should print help and return 0."""
+    def test_no_command_returns_nonzero(self):
+        """No subcommand should print help and return non-zero exit code."""
         result = main([])
-        assert result == 0
+        assert result == 1
 
     def test_version_flag(self):
         """--version should exit with version string."""

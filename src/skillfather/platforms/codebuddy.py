@@ -12,8 +12,9 @@ and the product branding.
 
 from pathlib import Path
 from skillfather.platforms.base import (
-    PlatformAdapter, PlatformInfo, _parse_yaml_frontmatter
+    PlatformAdapter, PlatformInfo
 )
+from skillfather.yaml_utils import parse_yaml_frontmatter as _parse_yaml_frontmatter
 from skillfather.parser import SkillProfile
 
 

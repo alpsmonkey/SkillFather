@@ -28,6 +28,32 @@ from skillfather.platforms.base import (
 from skillfather.parser import SkillProfile
 
 
+def _identify_binary_format(header: bytes) -> str:
+    """Identify common binary formats from the first few bytes.
+
+    Returns a human-readable format description for use in skill metadata.
+    """
+    if header[:4] == b"PK\x03\x04":
+        return "ZIP archive"
+    if header[:4] == b"\x89PNG":
+        return "PNG image"
+    if header[:2] == b"\xff\xd8":
+        return "JPEG image"
+    if header[:4] == b"RIFF" and header[8:12] == b"WEBP":
+        return "WebP image"
+    if header[:3] == b"GIF":
+        return "GIF image"
+    if header[:4] == b"\x7fELF":
+        return "ELF binary"
+    if header[:2] == b"MZ":
+        return "PE executable"
+    if header[:5] == b"%PDF-":
+        return "PDF document"
+    if header[:8] == b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1":
+        return "OLE2 compound document"
+    return "unknown binary"
+
+
 class CozeAdapter(PlatformAdapter):
 
     def info(self) -> PlatformInfo:
@@ -136,12 +162,14 @@ class CozeAdapter(PlatformAdapter):
             except json.JSONDecodeError:
                 return self._parse_text(path)
         except UnicodeDecodeError:
-            # Binary format - provide basic info
+            # Binary format - identify common formats via magic bytes
+            raw = path.read_bytes()[:16]
+            fmt_desc = _identify_binary_format(raw)
             return SkillProfile(
                 path=str(path.resolve()),
                 raw_content=f"[Binary .skill file: {path.name}]",
                 name=path.stem,
-                summary=f"Coze 技能 (二进制格式: {path.stat().st_size} bytes)",
+                summary=f"Coze 技能 ({fmt_desc}, {path.stat().st_size} bytes)",
             )
 
     def _parse_json(self, path: Path) -> SkillProfile:

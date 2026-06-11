@@ -14,8 +14,47 @@ _VARIANCE_SPREAD_FACTOR = 7       # Prime multiplier for hash-like distribution
 _VARIANCE_MODULUS = 17             # Prime modulus for hash-like distribution
 _VARIANCE_CENTER_OFFSET = 8       # Centers the range around zero (mod/2)
 _VARIANCE_SCALE = 100.0           # Divisor converts to ±0.08 range
-_VARIANCE_MIN_SCORE = 0.05         # Floor clamp to avoid zero/negative scores
-_VARIANCE_MAX_SCORE = 0.95         # Ceiling clamp to avoid guaranteed-perfect scores
+_VARIANCE_MIN_SCORE = 0.05        # Floor clamp to avoid zero/negative scores
+_VARIANCE_MAX_SCORE = 0.95        # Ceiling clamp to avoid guaranteed-perfect scores
+
+# --- Dimension estimation heuristics (named constants) ---
+# use_case (base: neutral-low, we can't know the user's actual needs)
+_USE_CASE_BASE = 0.4
+_USE_CASE_HAS_TRIGGERS = 0.25     # Skill clearly defines its scope
+_USE_CASE_HAS_SUMMARY = 0.15
+_USE_CASE_RICH_TRIGGERS = 0.10    # 5+ triggers = broader applicability
+_USE_CASE_MULTI_CAPS = 0.10       # 3+ capabilities
+
+# environment (base: assume most environments are capable)
+_ENV_BASE = 0.6
+_ENV_TOOL_FRICTION = 0.10         # External tools = potential setup friction
+_ENV_MANY_TOOLS = 0.10            # 4+ tools = higher barrier
+_ENV_DEP_FRICTION = 0.05          # pip dependencies = minor friction
+_ENV_ZERO_DEPS_BONUS = 0.15       # Zero external deps = easy to run
+
+# prerequisites (base: most skills are designed to be usable)
+_PREREQ_BASE = 0.7
+_PREREQ_HAS_REQ_PENALTY = 0.15    # Explicit requirements = potential friction
+_PREREQ_MANY_REQ_PENALTY = 0.10   # 4+ requirements
+_PREREQ_HAS_READ_WHEN = 0.10     # Well-defined trigger scenarios
+_PREREQ_NO_REQ_BONUS = 0.10      # No explicit barriers
+
+# workflow (base: unknown fit)
+_WORKFLOW_BASE = 0.5
+_WORKFLOW_HAS_INSTRUCTIONS = 0.15  # Substantial instructions = well thought out
+_WORKFLOW_HAS_CAPS = 0.15
+_WORKFLOW_COMPREHENSIVE = 0.10     # 5+ capabilities
+_WORKFLOW_DETAILED = 0.10          # 50+ lines
+_WORKFLOW_OVERLY_COMPLEX = 0.05    # 150+ lines = harder to adopt
+
+# documentation (base: assume moderate docs)
+_DOC_BASE = 0.3
+_DOC_HAS_SECTIONS = 0.20
+_DOC_WELL_STRUCTURED = 0.15        # 4+ sections
+_DOC_VERY_THOROUGH = 0.10          # 7+ sections
+_DOC_GOOD_SUMMARY = 0.10           # 50+ char summary
+_DOC_GOOD_DESC = 0.10              # 100+ char description
+_DOC_SUBSTANTIAL_BODY = 0.05       # 2+ sections + 200+ chars instructions
 
 
 @dataclass
@@ -415,75 +454,75 @@ def _estimate_dimension_scores(profile: SkillProfile) -> dict[str, float]:
 
     # ── use_case (25%) ──
     checks = _check_use_case(profile)
-    score = 0.4  # base: neutral-low (we can't know the user's actual needs)
+    score = _USE_CASE_BASE
     if checks["has_triggers"]:
-        score += 0.25  # skill clearly defines its scope
+        score += _USE_CASE_HAS_TRIGGERS
     if checks["has_summary"]:
-        score += 0.15
+        score += _USE_CASE_HAS_SUMMARY
     if len(profile.triggers) >= 5:
-        score += 0.1  # rich trigger vocabulary = broader applicability
+        score += _USE_CASE_RICH_TRIGGERS
     if len(profile.capabilities) >= 3:
-        score += 0.1  # multiple capabilities
+        score += _USE_CASE_MULTI_CAPS
     scores["use_case"] = min(score, 1.0)
 
     # ── environment (20%) ──
     checks = _check_environment(profile)
-    score = 0.6  # base: assume most environments are capable
+    score = _ENV_BASE
     if checks["has_tools"]:
-        score -= 0.1  # external tools = potential setup friction
+        score -= _ENV_TOOL_FRICTION
         if len(profile.tools_required) >= 4:
-            score -= 0.1  # many tools = higher barrier
+            score -= _ENV_MANY_TOOLS
     if checks["has_dependencies"]:
-        score -= 0.05  # pip dependencies = minor friction
+        score -= _ENV_DEP_FRICTION
     if not checks["has_tools"] and not checks["has_dependencies"]:
-        score += 0.15  # zero external deps = easy to run
+        score += _ENV_ZERO_DEPS_BONUS
     scores["environment"] = max(0.1, min(score, 1.0))
 
     # ── prerequisites (20%) ──
     checks = _check_prerequisites(profile)
-    score = 0.7  # base: most skills are designed to be usable
+    score = _PREREQ_BASE
     if checks["has_requirements"]:
-        score -= 0.15  # explicit requirements = potential friction
+        score -= _PREREQ_HAS_REQ_PENALTY
         if len(profile.requirements) >= 4:
-            score -= 0.1  # many requirements
+            score -= _PREREQ_MANY_REQ_PENALTY
     if checks["has_read_when"]:
-        score += 0.1  # well-defined trigger scenarios
+        score += _PREREQ_HAS_READ_WHEN
     if not checks["has_requirements"]:
-        score += 0.1  # no explicit barriers
+        score += _PREREQ_NO_REQ_BONUS
     scores["prerequisites"] = max(0.1, min(score, 1.0))
 
     # ── workflow (20%) ──
     checks = _check_workflow(profile)
-    score = 0.5  # base: unknown fit
+    score = _WORKFLOW_BASE
     line_count = len(profile.instructions.split("\n"))
     if checks["has_instructions"]:
-        score += 0.15  # substantial instructions = well thought out
+        score += _WORKFLOW_HAS_INSTRUCTIONS
     if checks["has_capabilities"]:
-        score += 0.15
+        score += _WORKFLOW_HAS_CAPS
         if len(profile.capabilities) >= 5:
-            score += 0.1  # comprehensive capabilities
+            score += _WORKFLOW_COMPREHENSIVE
     if line_count >= 50:
-        score += 0.1  # detailed workflow
+        score += _WORKFLOW_DETAILED
     if line_count >= 150:
-        score -= 0.05  # overly complex = harder to adopt
+        score -= _WORKFLOW_OVERLY_COMPLEX
     scores["workflow"] = max(0.1, min(score, 1.0))
 
     # ── documentation (15%) ──
     checks = _check_documentation(profile)
-    score = 0.3  # base: assume moderate docs
+    score = _DOC_BASE
     section_count = len(profile.all_sections)
     if checks["has_sections"]:
-        score += 0.2
+        score += _DOC_HAS_SECTIONS
     if section_count >= 4:
-        score += 0.15  # well-structured
+        score += _DOC_WELL_STRUCTURED
     if section_count >= 7:
-        score += 0.1  # very thorough
+        score += _DOC_VERY_THOROUGH
     if profile.summary and len(profile.summary) >= 50:
-        score += 0.1  # good summary
+        score += _DOC_GOOD_SUMMARY
     if profile.description and len(profile.description) >= 100:
-        score += 0.1  # good description
+        score += _DOC_GOOD_DESC
     if section_count >= 2 and len(profile.instructions) >= 200:
-        score += 0.05  # substantial body
+        score += _DOC_SUBSTANTIAL_BODY
     scores["documentation"] = max(0.1, min(score, 1.0))
 
     return scores

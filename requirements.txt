@@ -1,6 +1,5 @@
-# No external dependencies required for basic functionality
-# LLM mode requires only stdlib (urllib) - no third-party packages needed
-
-# Optional development dependencies
-# pytest>=7.0
-# ruff>=0.1.0
+# SkillFather has zero external runtime dependencies — it uses only the Python
+# standard library.  This file exists for tooling compatibility only.
+#
+# Development dependencies are declared in pyproject.toml under [project.optional-dependencies].
+# Install them with:  pip install -e ".[dev]"

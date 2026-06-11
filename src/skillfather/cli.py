@@ -296,7 +296,7 @@ def main(argv=None):
 
     if not args.command:
         parser.print_help()
-        return 0
+        return 1
 
     if args.command == "analyze":
         return cmd_analyze(args)

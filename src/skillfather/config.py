@@ -59,10 +59,15 @@ def load_config(config_path: str | None = None) -> dict:
             cfg = json.loads(p.read_text(encoding="utf-8"))
 
     # Environment variables override config file values (unified in one pass)
+    # SKILLFATHER_ prefixed vars take priority over generic aliases (e.g. OPENAI_API_KEY).
+    # Track which (section, key) pairs were already set so that a later alias
+    # cannot overwrite an earlier SKILLFATHER_ value.
+    _set_keys: set[tuple[str, str]] = set()
     for env_key, (section, key) in _ENV_MAPPING.items():
         value = os.environ.get(env_key)
-        if value is not None:
+        if value is not None and (section, key) not in _set_keys:
             cfg.setdefault(section, {})[key] = value
+            _set_keys.add((section, key))
 
     return cfg
 
