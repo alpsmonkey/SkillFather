@@ -87,11 +87,23 @@ def get_llm_config(config_path: str | Path | None = None) -> LLMConfig:
     )
 
 
+def _safe_int(raw, default: int = 8, lo: int = 1, hi: int = 50) -> int:
+    """Safely convert a value to int with range clamping.
+
+    Returns *default* on TypeError/ValueError; clamps result to [lo, hi].
+    """
+    try:
+        val = int(raw)
+    except (TypeError, ValueError):
+        return default
+    return max(lo, min(hi, val))
+
+
 def get_analysis_config(config_path: str | Path | None = None) -> AnalysisConfig:
     """Build AnalysisConfig from unified config (no duplicate env-var reads)."""
     cfg = load_config(str(config_path) if config_path else None)
     analysis_cfg = cfg.get("analysis", {})
 
     return AnalysisConfig(
-        num_questions=int(analysis_cfg.get("num_questions", 8)),
+        num_questions=_safe_int(analysis_cfg.get("num_questions"), default=8),
     )

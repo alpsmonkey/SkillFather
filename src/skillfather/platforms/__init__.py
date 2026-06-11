@@ -62,6 +62,22 @@ def list_platforms() -> list[PlatformInfo]:
     return [adapter_cls().info() for adapter_cls in PLATFORMS.values()]
 
 
+def _is_hermes_skill(content: str) -> bool:
+    """Check if SKILL.md content is a Hermes skill by inspecting frontmatter.
+
+    Parses YAML frontmatter and checks for the metadata.hermes block —
+    avoids false positives from body text that happens to mention 'hermes'.
+    Returns False on any parse error (conservative default).
+    """
+    try:
+        from skillfather.platforms.base import _parse_yaml_frontmatter
+        fm, _body = _parse_yaml_frontmatter(content)
+        meta = fm.get("metadata", {})
+        return isinstance(meta, dict) and isinstance(meta.get("hermes"), dict)
+    except Exception:
+        return False
+
+
 def detect_platform(path: str) -> PlatformAdapter | None:
     """Auto-detect the platform from file/directory structure.
 
@@ -84,11 +100,11 @@ def detect_platform(path: str) -> PlatformAdapter | None:
     if p.suffix == ".skill" or p.suffix == ".zip":
         return CozeAdapter()
 
-    # Hermes: SKILL.md with hermes-specific fields
+    # Hermes: SKILL.md with hermes-specific fields in frontmatter
     if p.name == "SKILL.md":
         try:
             content = p.read_text(encoding="utf-8", errors="ignore")
-            if "metadata:" in content and "hermes:" in content:
+            if _is_hermes_skill(content):
                 return HermesAdapter()
             if "agents/openai.yaml" in content.lower() or "allow_implicit_invocation" in content:
                 return CodexAdapter()
@@ -107,7 +123,7 @@ def detect_platform(path: str) -> PlatformAdapter | None:
         if (p / "SKILL.md").exists():
             try:
                 content = (p / "SKILL.md").read_text(encoding="utf-8", errors="ignore")
-                if "metadata:" in content and "hermes:" in content:
+                if _is_hermes_skill(content):
                     return HermesAdapter()
                 if (p / "agents" / "openai.yaml").exists():
                     return CodexAdapter()

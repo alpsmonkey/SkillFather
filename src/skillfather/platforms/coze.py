@@ -77,6 +77,11 @@ class CozeAdapter(PlatformAdapter):
         """Parse a .zip exported Coze skill."""
         try:
             with zipfile.ZipFile(path, "r") as zf:
+                # Validate archive integrity before extracting
+                bad_file = zf.testzip()
+                if bad_file is not None:
+                    print(f"[WARN] Coze ZIP integrity check failed on: {bad_file}")
+
                 # Look for manifest or config files
                 names = zf.namelist()
                 manifest_path = None

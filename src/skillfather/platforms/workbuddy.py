@@ -33,7 +33,18 @@ class WorkBuddyAdapter(PlatformAdapter):
         p = Path(path)
         if p.is_file() and p.name == "SKILL.md":
             parent_str = str(p.parent)
-            return ".workbuddy" in parent_str or "skills" in parent_str.lower()
+            # Explicit .workbuddy marker takes priority
+            if ".workbuddy" in parent_str:
+                return True
+            # Accept only well-known skill-store patterns to avoid false positives
+            # from random dirs whose name contains "skills" (e.g., node_modules/.prisma/skills)
+            parent_name = p.parent.name
+            if parent_name == "skills":
+                grandparent_parts = p.parent.parts[-2:] if len(p.parent.parts) >= 2 else []
+                return any(".workbuddy" in gp for gp in grandparent_parts) or any(
+                    gp in (".codebuddy", ".hermes") for gp in grandparent_parts
+                )
+            return False
         if p.is_dir() and (p / "SKILL.md").exists():
             return True
         return False

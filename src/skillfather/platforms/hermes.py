@@ -47,16 +47,13 @@ class HermesAdapter(PlatformAdapter):
 
     def detect(self, path: str | Path) -> bool:
         p = Path(path)
-        if p.is_file() and p.name == "SKILL.md":
+        if (p.is_file() and p.name == "SKILL.md") or (p.is_dir() and (p / "SKILL.md").exists()):
             try:
-                content = p.read_text(encoding="utf-8", errors="ignore")
-                return "metadata:" in content and "hermes:" in content
-            except Exception:
-                return False
-        if p.is_dir() and (p / "SKILL.md").exists():
-            try:
-                content = (p / "SKILL.md").read_text(encoding="utf-8", errors="ignore")
-                return "metadata:" in content and "hermes:" in content
+                target = (p / "SKILL.md") if p.is_dir() else p
+                content = target.read_text(encoding="utf-8", errors="ignore")
+                fm, _body = _parse_yaml_frontmatter(content)
+                meta = fm.get("metadata", {})
+                return isinstance(meta, dict) and isinstance(meta.get("hermes"), dict)
             except Exception:
                 return False
         return False
