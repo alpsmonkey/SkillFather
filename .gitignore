@@ -16,3 +16,4 @@ build/
 !SKILL.md
 !dist/**/*.md
 !LICENSE
+!examples/*.md
