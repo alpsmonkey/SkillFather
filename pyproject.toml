@@ -34,7 +34,7 @@ skillfather = "skillfather.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-skillfather = ["py.typed"]
+skillfather = ["py.typed", "data/SKILL.md"]
 
 [tool.ruff]
 target-version = "py310"

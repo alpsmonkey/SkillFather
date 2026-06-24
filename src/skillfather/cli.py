@@ -22,6 +22,7 @@ from skillfather.platforms import (
     detect_platform,
     parse_skill_file,
 )
+from skillfather.installer import install_skill, uninstall_skill
 
 
 def _print_banner(platform: str = None):
@@ -120,6 +121,22 @@ def cmd_list_platforms(args):
             print(f"    文档:    {p.docs_url}")
         print()
 
+    return 0
+
+
+def cmd_install_skill(args):
+    """Install SkillFather as a WorkBuddy local Skill."""
+    print()
+    print("  正在安装 SkillFather 为 WorkBuddy 本地 Skill...")
+    ok = install_skill(force=args.force)
+    return 0 if ok else 1
+
+
+def cmd_uninstall_skill(args):
+    """Uninstall SkillFather from WorkBuddy local Skills."""
+    print()
+    print("  正在卸载 SkillFather Skill...")
+    uninstall_skill()
     return 0
 
 
@@ -289,6 +306,20 @@ def main(argv=None):
     # list-platforms subcommand
     subparsers.add_parser("platforms", help="列出所有支持的平台")
 
+    # install-skill subcommand
+    install_parser = subparsers.add_parser(
+        "install-skill", help="安装为 WorkBuddy 本地 Skill"
+    )
+    install_parser.add_argument(
+        "--force", action="store_true",
+        help="强制覆盖已存在的 Skill 文件",
+    )
+
+    # uninstall-skill subcommand
+    subparsers.add_parser(
+        "uninstall-skill", help="从 WorkBuddy 卸载 SkillFather Skill"
+    )
+
     # version
     parser.add_argument("-v", "--version", action="version", version="skillfather 0.2.1")
 
@@ -302,6 +333,10 @@ def main(argv=None):
         return cmd_analyze(args)
     elif args.command == "platforms":
         return cmd_list_platforms(args)
+    elif args.command == "install-skill":
+        return cmd_install_skill(args)
+    elif args.command == "uninstall-skill":
+        return cmd_uninstall_skill(args)
 
     return 0
 
