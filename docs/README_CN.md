@@ -298,3 +298,7 @@ cp SKILL.md ~/.workbuddy/skills/skillfather/SKILL.md
 ## 许可证
 
 [MIT](LICENSE) — 随便用、随便改、随便发。
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=alpsmonkey/SkillFather&type=Date)](https://star-history.com/#alpsmonkey/SkillFather&Date)

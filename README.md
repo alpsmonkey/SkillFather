@@ -298,3 +298,7 @@ Every Skill has a creator, but nobody tells you whether that Skill was built for
 ## License
 
 [MIT](LICENSE) — use it, modify it, ship it.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=alpsmonkey/SkillFather&type=Date)](https://star-history.com/#alpsmonkey/SkillFather&Date)
